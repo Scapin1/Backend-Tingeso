@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class LoanService {
     private final ToolService toolService;
     private final ClientService clientService;
 
-    public Iterable<LoanEntity> getAllLoans() {
+    public List<LoanEntity> getAllLoans() {
         return loanRepository.findAll();
     }
 

@@ -5,6 +5,7 @@ import Tingeso.Web_mono.Service.LoanService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,7 +15,7 @@ public class LoanController {
     private final LoanService loanService;
 
     @GetMapping("/getAll")
-    public Iterable<LoanEntity> getAllLoans() {
+    public List<LoanEntity> getAllLoans() {
         return loanService.getAllLoans();
     }
 

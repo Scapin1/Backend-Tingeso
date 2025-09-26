@@ -21,5 +21,5 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
 
     long countByClientIdAndStatus(Long clientId, LoanState  status);
 
-     LoanEntity findByToolLoaned_Id(Long toolId);
+    LoanEntity findByToolLoaned_Id(Long toolId);
 }
