@@ -52,8 +52,6 @@ public class ToolService {
     }
 
     public List<ToolAvailableDTO> findAllList(HttpServletRequest request) {
-//       String token = request.getHeader("Authorization").substring(7);
-//       String userEmail = jwtService.getUserName(token);
         List<Object[]> results = toolRepository.findAvailableToolsGrouped();
         List<ToolAvailableDTO> dtos = results.stream()
                 .map(obj -> new ToolAvailableDTO(
@@ -69,9 +67,7 @@ public class ToolService {
         return toolRepository.findByName(toolName);
     }
 
-    public ToolEntity sentMaintenance(HttpServletRequest request) {
-        Long toolId = (Long) request.getAttribute("toolId");
-        String token = request.getHeader("Authorization").substring(7);
+    public ToolEntity sentMaintenance(Long toolId) {
 
         ToolEntity tool = toolRepository.findById(toolId).orElse(null);
         if (tool == null) {

@@ -1,6 +1,7 @@
 package Tingeso.Web_mono.Service;
 
 
+import Tingeso.Web_mono.Controller.models.LoanDTO;
 import Tingeso.Web_mono.Entity.*;
 import Tingeso.Web_mono.Repository.ClientRepository;
 import Tingeso.Web_mono.Repository.LoanRepository;
@@ -27,8 +28,8 @@ public class LoanService {
     private final ToolService toolService;
     private final ClientService clientService;
 
-    public List<LoanEntity> getAllLoans() {
-        return loanRepository.findAll();
+    public List<LoanDTO> getAllLoans() {
+        return loanRepository.findAllLoan();
     }
 
     public LoanEntity addLoan(LoanEntity loan) {
@@ -63,41 +64,48 @@ public class LoanService {
 
     }
 
-    public LoanEntity returnLoan(HttpServletRequest request) {
-        Long loanId = Long.parseLong(request.getParameter("loanId"));
-        boolean damage = Boolean.parseBoolean(request.getParameter("damage"));
+    public LoanEntity returnLoan(Long loanId, boolean damage) {
         int lateFee = 0;
         int damageFee = 0;
-
         LoanEntity loan = loanRepository.findById(loanId).orElse(null);
+
         if (loan == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loan not found");
         } else if(loan.getStatus().equals(LoanState.IN_REPAIR) || loan.getStatus().equals(LoanState.FINISHED)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loan already returned");
         }
-        if (loan.getReturnDate().isBefore(LocalDate.now())) {
-            long daysLate = Duration.between(loan.getReturnDate(), LocalDateTime.now()).toDays();
-            lateFee = (int) (daysLate * loan.getToolLoaned().getFee().getLateFee());
-        }
+
         ToolEntity tool = loan.getToolLoaned();
+
+        if (loan.getReturnDate().isBefore(LocalDate.now())) {
+            long daysLate = ChronoUnit.DAYS.between(loan.getReturnDate(), LocalDate.now());
+            lateFee = (int) (daysLate * tool.getFee().getLateFee());
+        }
+
         if(damage) {
+
             damageFee = tool.getFee().getMaintenanceFee();
-            request.setAttribute("toolId",tool.getId());
-            toolService.sentMaintenance(request);
+            toolService.sentMaintenance(tool.getId());
             loan.setStatus(LoanState.IN_REPAIR);
+
         }else{
+
             tool.setState(ToolStateType.AVAILABLE);
             loan.setStatus(LoanState.FINISHED);
+            toolRepository.save(tool);
+
         }
-        toolRepository.save(tool);
+
         ClientEntity client = loan.getClient();
 
         //change state if the client has debt
         if(client.getDebt() + lateFee + damageFee > 0) {
+
+            client.setDebt(lateFee + damageFee + client.getDebt());
             clientService.changeState(client.getId());
+            clientRepository.save(client);
+
         }
-        client.setDebt(lateFee + damageFee + client.getDebt());
-        clientRepository.save(client);
         return loanRepository.save(loan);
     }
 }

@@ -1,5 +1,6 @@
 package Tingeso.Web_mono.Controller;
 
+import Tingeso.Web_mono.Controller.models.LoanDTO;
 import Tingeso.Web_mono.Entity.LoanEntity;
 import Tingeso.Web_mono.Service.LoanService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,7 @@ public class LoanController {
     private final LoanService loanService;
 
     @GetMapping("/getAll")
-    public List<LoanEntity> getAllLoans() {
+    public List<LoanDTO> getAllLoans() {
         return loanService.getAllLoans();
     }
 
@@ -24,9 +25,9 @@ public class LoanController {
         return loanService.addLoan(loanEntity);
     }
 
-    @PutMapping("/returnLoan")
-    public LoanEntity returnLoan(HttpServletRequest request) {
-        return loanService.returnLoan(request);
+    @PutMapping("/returnLoan/{loanId}/{damaged}")
+    public LoanEntity returnLoan(@PathVariable Long loanId, @PathVariable Boolean damaged) {
+        return loanService.returnLoan(loanId, damaged);
     }
 
 }

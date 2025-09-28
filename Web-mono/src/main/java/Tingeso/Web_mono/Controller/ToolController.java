@@ -33,9 +33,9 @@ public class ToolController {
         toolService.save(request);
     }
 
-    @PostMapping("/sendMaintenance")
-    public ToolEntity sendMaintenance(HttpServletRequest request) {
-        return toolService.sentMaintenance(request);
+    @PostMapping("/sendMaintenance/{toolId}")
+    public ToolEntity sendMaintenance(@PathVariable Long toolId) {
+        return toolService.sentMaintenance(toolId);
     }
 
     @PostMapping("/changeRepoFee")
