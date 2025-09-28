@@ -2,6 +2,7 @@ package Tingeso.Web_mono.Service;
 
 import Tingeso.Web_mono.Controller.models.ToolAvailableDTO;
 import Tingeso.Web_mono.Entity.*;
+import Tingeso.Web_mono.Repository.ClientRepository;
 import Tingeso.Web_mono.Repository.FeeRepository;
 import Tingeso.Web_mono.Repository.LoanRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,8 @@ public class ToolService {
     private final ToolRepository toolRepository;
     private final FeeRepository feeRepository;
     private final LoanRepository  loanRepository;
+    private final ClientRepository clientRepository;
+    private final ClientService clientService;
 
     public void save(HttpServletRequest request) {
         int quantity = Integer.parseInt(request.getParameter("quantity"));
@@ -79,13 +82,23 @@ public class ToolService {
 
     public ToolEntity writeOff(Long toolId) {
         ToolEntity tool = toolRepository.findById(toolId).orElse(null);
+
         if (tool == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tool not found");
         }
-        if (tool.getState() == ToolStateType.IN_REPAIR) {
-            LoanEntity loan = loanRepository.findByToolLoaned_Id(toolId);
 
+        LoanEntity loan = loanRepository.findByToolLoaned_Id(toolId);
+        if (loan != null) {
+            ClientEntity client = loan.getClient();
+            loan.setStatus(LoanState.FINISHED);
+            loanRepository.save(loan);
+            client.setDebt(client.getDebt() + tool.getFee().getRepoFee());
+            if(client.getClientState() == ClientState.ACTIVE) {
+                clientService.changeState(client.getId());
+            }
+            clientRepository.save(client);
         }
+
         tool.setState(ToolStateType.WRITTEN_OFF);
         return toolRepository.save(tool);
     }

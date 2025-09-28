@@ -41,20 +41,20 @@ public class LoanService {
         ClientEntity newClient = clientRepository.getReferenceById(clientId);
 
         if(toolRepository.getStock(newTool.getName()) < 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Not enough stock for the tool");
+            throw new ResponseStatusException(HttpStatus.LOCKED,"Not enough stock for the tool");
         }else if(newClient.getClientState().toString().equals("RESTRICTED") || loanRepository.existsOverdueLoanByClientId(newClient.getId()) ) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Client is restricted");
+            throw new ResponseStatusException(HttpStatus.LOCKED,"Client is restricted");
         }else  if(loanDate.isAfter(returnDate)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Return date must be after loan date");
+            throw new ResponseStatusException(HttpStatus.LOCKED,"Return date must be after loan date");
         } else if (loanRepository.countByClientIdAndStatus(newClient.getId(), LoanState.NORMAL) >= 5) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Client has reached the maximum number of loans");
+            throw new ResponseStatusException(HttpStatus.LOCKED,"Client has reached the maximum number of loans");
         } else if (loanRepository.existsByToolAndClient(newTool.getName(), newClient)) {
             throw new ResponseStatusException(HttpStatus.LOCKED,"Client already has this tool on loan");
         } else if (ChronoUnit.DAYS.between(loanDate, returnDate) < 1
         ) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loan period must be at least 1 day");
+            throw new ResponseStatusException(HttpStatus.LOCKED,"Loan period must be at least 1 day");
         } else if (newClient.getDebt() > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Client has outstanding debt");
+            throw new ResponseStatusException(HttpStatus.LOCKED,"Client has outstanding debt");
         }
         loan.setToolLoaned(newTool);
         newTool.setState(ToolStateType.LOANED);
