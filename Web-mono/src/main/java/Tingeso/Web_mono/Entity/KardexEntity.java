@@ -17,9 +17,10 @@ public class KardexEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String productId;
+    private Long toolId;
+    private String user;
     private int quantity;
     private LocalDateTime movementDate;
     @Enumerated(EnumType.STRING)
-    private KardexMovementType kardexMovementType;
+    private KardexMovementType type;
 }

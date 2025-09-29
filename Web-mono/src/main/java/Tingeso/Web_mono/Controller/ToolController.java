@@ -1,5 +1,6 @@
 package Tingeso.Web_mono.Controller;
 
+import Tingeso.Web_mono.Controller.models.CreateToolDTO;
 import Tingeso.Web_mono.Controller.models.ToolAvailableDTO;
 import Tingeso.Web_mono.Entity.FeeEntity;
 import Tingeso.Web_mono.Entity.ToolEntity;
@@ -33,14 +34,14 @@ public class ToolController {
         return toolService.getFees(toolId);
     }
 
-    @PostMapping("/addTool")
-    public void addTool(HttpServletRequest request) {
-        toolService.save(request);
+    @PostMapping("/addTool/{username}")
+    public void addTool(@RequestBody CreateToolDTO tool,@PathVariable String username) {
+        toolService.save(tool, username);
     }
 
-    @PostMapping("/sendMaintenance/{toolId}")
-    public ToolEntity sendMaintenance(@PathVariable Long toolId) {
-        return toolService.sentMaintenance(toolId);
+    @PostMapping("/sendMaintenance/{toolId}/{username}")
+    public ToolEntity sendMaintenance(@PathVariable Long toolId, @PathVariable String username) {
+        return toolService.sentMaintenance(toolId, username);
     }
 
     @PutMapping("/changeFee")
@@ -48,8 +49,8 @@ public class ToolController {
         return toolService.changeFee(fees);
     }
 
-    @PutMapping("/writeOff")
-    public ToolEntity writeOffTool(Long toolId) {
-        return toolService.writeOff(toolId);
+    @PutMapping("/writeOff/{toolId}/{username}")
+    public ToolEntity writeOffTool(@PathVariable Long toolId, @PathVariable String username) {
+        return toolService.writeOff(toolId, username);
     }
 }

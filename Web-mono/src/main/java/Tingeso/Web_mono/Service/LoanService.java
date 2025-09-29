@@ -4,6 +4,7 @@ package Tingeso.Web_mono.Service;
 import Tingeso.Web_mono.Controller.models.LoanDTO;
 import Tingeso.Web_mono.Entity.*;
 import Tingeso.Web_mono.Repository.ClientRepository;
+import Tingeso.Web_mono.Repository.KardexRepository;
 import Tingeso.Web_mono.Repository.LoanRepository;
 import Tingeso.Web_mono.Repository.ToolRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,12 +28,13 @@ public class LoanService {
     private final ToolRepository toolRepository;
     private final ToolService toolService;
     private final ClientService clientService;
+    private final KardexRepository kardexRepository;
 
     public List<LoanDTO> getAllLoans() {
         return loanRepository.findAllLoan();
     }
 
-    public LoanEntity addLoan(LoanEntity loan) {
+    public LoanEntity addLoan(LoanEntity loan, String username) {
         Long clientId = loan.getClient().getId();
         LocalDate loanDate = LocalDate.now();
         LocalDate returnDate = loan.getReturnDate();
@@ -60,11 +62,20 @@ public class LoanService {
         newTool.setState(ToolStateType.LOANED);
         toolRepository.save(newTool);
 
+        KardexEntity kardex = KardexEntity.builder()
+                .type(KardexMovementType.LOAN)
+                .quantity(1)
+                .user(username)
+                .movementDate(LocalDateTime.now())
+                .toolId(newTool.getId())
+                .build();
+        kardexRepository.save(kardex);
+
         return loanRepository.save(loan);
 
     }
 
-    public LoanEntity returnLoan(Long loanId, boolean damage) {
+    public LoanEntity returnLoan(Long loanId, boolean damage, String username) {
         int lateFee = 0;
         int damageFee = 0;
         LoanEntity loan = loanRepository.findById(loanId).orElse(null);
@@ -85,7 +96,7 @@ public class LoanService {
         if(damage) {
 
             damageFee = tool.getFee().getMaintenanceFee();
-            toolService.sentMaintenance(tool.getId());
+            toolService.sentMaintenance(tool.getId(), username);
             loan.setStatus(LoanState.IN_REPAIR);
 
         }else{
@@ -106,6 +117,16 @@ public class LoanService {
             clientRepository.save(client);
 
         }
+
+        KardexEntity kardex = KardexEntity.builder()
+                .type(KardexMovementType.RETURN)
+                .quantity(1)
+                .user(username)
+                .movementDate(LocalDateTime.now())
+                .toolId(tool.getId())
+                .build();
+        kardexRepository.save(kardex);
+
         return loanRepository.save(loan);
     }
 }

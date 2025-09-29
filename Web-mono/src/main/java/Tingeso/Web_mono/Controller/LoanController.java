@@ -20,14 +20,14 @@ public class LoanController {
         return loanService.getAllLoans();
     }
 
-    @PostMapping("/addLoan")
-    public LoanEntity addLoan(@RequestBody LoanEntity loanEntity) {
-        return loanService.addLoan(loanEntity);
+    @PostMapping("/addLoan/{username}")
+    public LoanEntity addLoan(@RequestBody LoanEntity loanEntity, @PathVariable String username) {
+        return loanService.addLoan(loanEntity, username);
     }
 
-    @PutMapping("/returnLoan/{loanId}/{damaged}")
-    public LoanEntity returnLoan(@PathVariable Long loanId, @PathVariable Boolean damaged) {
-        return loanService.returnLoan(loanId, damaged);
+    @PutMapping("/returnLoan/{loanId}/{damaged}/{username}")
+    public LoanEntity returnLoan(@PathVariable Long loanId, @PathVariable Boolean damaged, @PathVariable String username) {
+        return loanService.returnLoan(loanId, damaged, username);
     }
 
 }

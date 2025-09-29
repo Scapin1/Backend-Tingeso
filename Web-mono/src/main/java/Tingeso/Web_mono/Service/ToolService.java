@@ -1,18 +1,17 @@
 package Tingeso.Web_mono.Service;
 
+import Tingeso.Web_mono.Controller.models.CreateToolDTO;
 import Tingeso.Web_mono.Controller.models.ToolAvailableDTO;
 import Tingeso.Web_mono.Entity.*;
-import Tingeso.Web_mono.Repository.ClientRepository;
-import Tingeso.Web_mono.Repository.FeeRepository;
-import Tingeso.Web_mono.Repository.LoanRepository;
+import Tingeso.Web_mono.Repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import Tingeso.Web_mono.Repository.ToolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.swing.text.html.parser.Entity;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,30 +24,40 @@ public class ToolService {
     private final LoanRepository  loanRepository;
     private final ClientRepository clientRepository;
     private final ClientService clientService;
+    private final KardexRepository kardexRepository;
 
-    public void save(HttpServletRequest request) {
-        int quantity = Integer.parseInt(request.getParameter("quantity"));
-        String name = request.getParameter("name");
-        String category = request.getParameter("category");
-        int repoFee = Integer.parseInt(request.getParameter("repoFee"));
-        String state = request.getParameter("state");
+    public void save(CreateToolDTO tool, String username) {
+        int repoFee = tool.getRepoFee();
+        String name = tool.getName();
+        String category = tool.getCategory();
+        int quantity = tool.getQuantity();
         FeeEntity fee = new FeeEntity();
         fee.setRepoFee(repoFee);
-        if( toolRepository.findTopByName(name) == null || toolRepository.findTopByName(name).getFee() == null){
-            feeRepository.save(fee);
-        }else{
-            fee = toolRepository.findTopByName(name).getFee();
+        if(toolRepository.getStock(name) > 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tool already exists");
         }
+
+        feeRepository.save(fee);
 
         for (int i = 0; i < quantity; i++) {
             ToolEntity toolCopy = ToolEntity.builder()
                     .name(name)
                     .category(category)
-                    .state(ToolStateType.valueOf(state))
+                    .state(ToolStateType.AVAILABLE)
                     .fee(fee)
                     .build();
             toolRepository.save(toolCopy);
         };
+
+        KardexEntity kardex = KardexEntity.builder()
+                .type(KardexMovementType.INCOME)
+                .quantity(quantity)
+                .user(username)
+                .movementDate(LocalDateTime.now())
+                .build();
+        kardexRepository.save(kardex);
+
+
     }
 
     public List<ToolEntity> findAll() {
@@ -67,17 +76,27 @@ public class ToolService {
         return dtos;
     }
 
-    public ToolEntity sentMaintenance(Long toolId) {
+    public ToolEntity sentMaintenance(Long toolId, String username) {
 
         ToolEntity tool = toolRepository.findById(toolId).orElse(null);
         if (tool == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tool not found");
         }
         tool.setState(ToolStateType.IN_REPAIR);
+
+        KardexEntity kardex = KardexEntity.builder()
+                .type(KardexMovementType.REPAIR)
+                .quantity(1)
+                .user(username)
+                .movementDate(LocalDateTime.now())
+                .toolId(toolId)
+                .build();
+        kardexRepository.save(kardex);
+
         return toolRepository.save(tool);
     }
 
-    public ToolEntity writeOff(Long toolId) {
+    public ToolEntity writeOff(Long toolId, String username) {
         ToolEntity tool = toolRepository.findById(toolId).orElse(null);
 
         if (tool == null) {
@@ -97,6 +116,16 @@ public class ToolService {
         }
 
         tool.setState(ToolStateType.WRITTEN_OFF);
+
+        KardexEntity kardex = KardexEntity.builder()
+                .type(KardexMovementType.WRITE_OFF)
+                .quantity(1)
+                .user(username)
+                .movementDate(LocalDateTime.now())
+                .toolId(toolId)
+                .build();
+        kardexRepository.save(kardex);
+
         return toolRepository.save(tool);
     }
 
