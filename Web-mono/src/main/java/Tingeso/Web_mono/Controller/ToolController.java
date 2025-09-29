@@ -28,6 +28,11 @@ public class ToolController {
         return toolService.findAll();
     }
 
+    @GetMapping("/getFees/{toolId}")
+    public FeeEntity getFees(@PathVariable Long toolId) {
+        return toolService.getFees(toolId);
+    }
+
     @PostMapping("/addTool")
     public void addTool(HttpServletRequest request) {
         toolService.save(request);
@@ -38,26 +43,9 @@ public class ToolController {
         return toolService.sentMaintenance(toolId);
     }
 
-    @PostMapping("/changeRepoFee")
-    public FeeEntity changeRepoFee(HttpServletRequest request) {
-
-        return toolService.changeRepoFee(request);
-    }
-
-    @PostMapping("/changeRentFee")
-    public FeeEntity changeRentFee(HttpServletRequest request) {
-
-        return toolService.changeRentFee(request);
-    }
-
-    @PostMapping("/changeLateFee")
-    public FeeEntity changeLateFee(HttpServletRequest request) {
-        return toolService.changeLateFee(request);
-    }
-
-    @PostMapping("/changeMaintenanceFee")
-    public FeeEntity changeMaintenanceFee(HttpServletRequest request) {
-        return toolService.changeMaintenanceFee(request);
+    @PutMapping("/changeFee")
+    public FeeEntity changeFee(@RequestBody FeeEntity fees) {
+        return toolService.changeFee(fees);
     }
 
     @PutMapping("/writeOff")

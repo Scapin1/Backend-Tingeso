@@ -12,6 +12,7 @@ import Tingeso.Web_mono.Repository.ToolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,10 +67,6 @@ public class ToolService {
         return dtos;
     }
 
-    public ToolEntity findByToolName(String toolName) {
-        return toolRepository.findByName(toolName);
-    }
-
     public ToolEntity sentMaintenance(Long toolId) {
 
         ToolEntity tool = toolRepository.findById(toolId).orElse(null);
@@ -103,40 +100,16 @@ public class ToolService {
         return toolRepository.save(tool);
     }
 
-    public FeeEntity changeLateFee(HttpServletRequest request) {
-        String toolName = request.getParameter("toolName");
-        int lateFee = Integer.parseInt(request.getParameter("lateFee"));
-        ToolEntity tool = findByToolName(toolName);
-        FeeEntity fee = tool.getFee();
-        fee.setLateFee(lateFee);
-        return feeRepository.save(fee);
+    public FeeEntity getFees(Long ToolId) {
+        ToolEntity tool = toolRepository.findById(ToolId).orElse(null);
+        if (tool == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tool not found");
+        }
+        return tool.getFee();
     }
 
-    public FeeEntity changeRentFee(HttpServletRequest request) {
-        String toolName = request.getParameter("toolName");
-        int rentalFee = Integer.parseInt(request.getParameter("rentFee"));
-        ToolEntity tool = findByToolName(toolName);
-        FeeEntity fee = tool.getFee();
-        fee.setRentalFee(rentalFee);
-        return feeRepository.save(fee);
-    }
-
-    public FeeEntity changeRepoFee(HttpServletRequest request) {
-        String toolName = request.getParameter("toolName");
-        int repoFee = Integer.parseInt(request.getParameter("repoFee"));
-        ToolEntity tool = findByToolName(toolName);
-        FeeEntity fee = tool.getFee();
-        fee.setRepoFee(repoFee);
-        return feeRepository.save(fee);
-    }
-
-    public FeeEntity changeMaintenanceFee(HttpServletRequest request) {
-        String toolName = request.getParameter("toolName");
-        int maintenanceFee = Integer.parseInt(request.getParameter("maintenanceFee"));
-        ToolEntity tool = findByToolName(toolName);
-        FeeEntity fee = tool.getFee();
-        fee.setMaintenanceFee(maintenanceFee);
-        return feeRepository.save(fee);
+    public FeeEntity changeFee(FeeEntity fees) {
+        return feeRepository.save(fees);
     }
 
 
