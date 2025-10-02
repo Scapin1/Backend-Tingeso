@@ -6,6 +6,7 @@ import Tingeso.Web_mono.Entity.LoanEntity;
 import Tingeso.Web_mono.Entity.LoanState;
 import Tingeso.Web_mono.Entity.ToolEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -29,4 +30,8 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     @Query("SELECT new Tingeso.Web_mono.Controller.models.LoanDTO(l.id, l.loanDate, l.returnDate, l.status, l.toolLoaned.name, l.client.rut) FROM LoanEntity l")
     List<LoanDTO> findAllLoan();
 
+    @Modifying
+    @Query("UPDATE LoanEntity l SET l.status = 'OVERDUE' " +
+            "WHERE l.returnDate < CURRENT_DATE AND l.status = 'NORMAL'")
+    void markOverdueLoans();
 }

@@ -8,6 +8,7 @@ import Tingeso.Web_mono.Repository.KardexRepository;
 import Tingeso.Web_mono.Repository.LoanRepository;
 import Tingeso.Web_mono.Repository.ToolRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,10 @@ public class LoanService {
     private final ClientService clientService;
     private final KardexRepository kardexRepository;
 
+    @Transactional
     public List<LoanDTO> getAllLoans() {
+
+        loanRepository.markOverdueLoans();
         return loanRepository.findAllLoan();
     }
 
@@ -66,7 +70,7 @@ public class LoanService {
                 .type(KardexMovementType.LOAN)
                 .quantity(1)
                 .user(username)
-                .movementDate(LocalDateTime.now())
+                .movementDate(LocalDateTime.now().withSecond(0).withNano(0))
                 .toolId(newTool.getId())
                 .build();
         kardexRepository.save(kardex);
@@ -113,7 +117,6 @@ public class LoanService {
         if(client.getDebt() + lateFee + damageFee > 0) {
 
             client.setDebt(lateFee + damageFee + client.getDebt());
-            clientService.changeState(client.getId());
             clientRepository.save(client);
 
         }
@@ -122,7 +125,7 @@ public class LoanService {
                 .type(KardexMovementType.RETURN)
                 .quantity(1)
                 .user(username)
-                .movementDate(LocalDateTime.now())
+                .movementDate(LocalDateTime.now().withSecond(0).withNano(0))
                 .toolId(tool.getId())
                 .build();
         kardexRepository.save(kardex);
