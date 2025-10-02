@@ -25,4 +25,20 @@ public class KardexService {
     public List<KardexEntity> getAll() {
         return kardexRepository.findAll();
     }
+
+    public List<KardexEntity> findKardex(Long toolId, LocalDateTime start, LocalDateTime end) {
+        if (toolId != null && start != null && end != null) {
+            // Filtrar por herramienta y rango de fechas
+            return kardexRepository.findByToolIdAndMovementDateBetween(toolId, start, end);
+        } else if (toolId != null) {
+            // Solo por herramienta
+            return kardexRepository.findByToolId(toolId);
+        } else if (start != null && end != null) {
+            // Solo por rango de fechas
+            return kardexRepository.findBetweenDates(start, end);
+        } else {
+            // Sin filtros, retorna todo
+            return kardexRepository.findAll();
+        }
+    }
 }

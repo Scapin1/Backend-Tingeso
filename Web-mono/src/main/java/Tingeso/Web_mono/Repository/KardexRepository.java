@@ -15,4 +15,7 @@ public interface KardexRepository extends JpaRepository<KardexEntity, Long> {
 
     @Query("SELECT k FROM KardexEntity k WHERE k.movementDate BETWEEN :start AND :end")
     List<KardexEntity> findBetweenDates(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT k FROM KardexEntity k WHERE k.toolId = :toolId AND k.movementDate BETWEEN :start AND :end")
+    List<KardexEntity> findByToolIdAndMovementDateBetween(Long toolId, LocalDateTime start, LocalDateTime end);
 }
