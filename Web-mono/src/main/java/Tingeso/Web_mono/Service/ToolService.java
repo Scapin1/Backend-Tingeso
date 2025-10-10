@@ -111,9 +111,6 @@ public class ToolService {
             loan.setStatus(LoanState.FINISHED);
             loanRepository.save(loan);
             client.setDebt(client.getDebt() + tool.getFee().getRepoFee());
-            if(client.getClientState() == ClientState.ACTIVE) {
-                clientService.changeState(client.getId());
-            }
             clientRepository.save(client);
         }
 

@@ -28,7 +28,7 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     @Query("SELECT l FROM LoanEntity l WHERE l.toolLoaned.id = :toolId AND l.status != Tingeso.Web_mono.Entity.LoanState.FINISHED")
     LoanEntity findByToolLoaned_Id(Long toolId);
 
-    @Query("SELECT new Tingeso.Web_mono.Controller.models.LoanDTO(l.id, l.loanDate, l.returnDate, l.status, l.toolLoaned.name, l.client.rut) FROM LoanEntity l")
+    @Query("SELECT new Tingeso.Web_mono.Controller.models.LoanDTO(l.id, l.loanDate, l.returnDate, l.status, l.toolLoaned.name, l.toolLoaned.id, l.client.rut) FROM LoanEntity l")
     List<LoanDTO> findAllLoan();
 
     @Query("SELECT new Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO(l.client.rut, COUNT(l)) " +

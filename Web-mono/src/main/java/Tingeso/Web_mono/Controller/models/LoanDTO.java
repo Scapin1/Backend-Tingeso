@@ -25,6 +25,8 @@ public class LoanDTO {
 
     private String toolLoaned;
 
+    private Long toolId;
+
     private String client;
 
 }
