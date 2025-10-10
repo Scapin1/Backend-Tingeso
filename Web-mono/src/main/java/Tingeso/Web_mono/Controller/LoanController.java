@@ -1,5 +1,6 @@
 package Tingeso.Web_mono.Controller;
 
+import Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO;
 import Tingeso.Web_mono.Controller.models.LoanDTO;
 import Tingeso.Web_mono.Entity.LoanEntity;
 import Tingeso.Web_mono.Service.LoanService;
@@ -28,6 +29,11 @@ public class LoanController {
     @PutMapping("/returnLoan/{loanId}/{damaged}/{username}")
     public LoanEntity returnLoan(@PathVariable Long loanId, @PathVariable Boolean damaged, @PathVariable String username) {
         return loanService.returnLoan(loanId, damaged, username);
+    }
+
+    @GetMapping("/clientWithMostLoans")
+    public List<ClientWithMostLoansDTO> getClientWithMostLoans() {
+        return loanService.getClientWithMostLoans();
     }
 
 }

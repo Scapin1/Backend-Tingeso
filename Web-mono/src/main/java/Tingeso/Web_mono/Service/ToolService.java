@@ -53,6 +53,7 @@ public class ToolService {
                 .type(KardexMovementType.INCOME)
                 .quantity(quantity)
                 .user(username)
+                .toolName(tool.getName())
                 .movementDate(LocalDateTime.now())
                 .build();
         kardexRepository.save(kardex);
@@ -88,6 +89,7 @@ public class ToolService {
                 .type(KardexMovementType.REPAIR)
                 .quantity(1)
                 .user(username)
+                .toolName(tool.getName())
                 .movementDate(LocalDateTime.now())
                 .toolId(toolId)
                 .build();
@@ -121,6 +123,7 @@ public class ToolService {
                 .type(KardexMovementType.WRITE_OFF)
                 .quantity(1)
                 .user(username)
+                .toolName(tool.getName())
                 .movementDate(LocalDateTime.now())
                 .toolId(toolId)
                 .build();

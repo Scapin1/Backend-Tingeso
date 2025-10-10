@@ -18,6 +18,7 @@ public class KardexEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long toolId;
+    private String toolName;
     private String user;
     private int quantity;
     private LocalDateTime movementDate;

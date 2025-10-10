@@ -1,6 +1,7 @@
 package Tingeso.Web_mono.Service;
 
 
+import Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO;
 import Tingeso.Web_mono.Controller.models.LoanDTO;
 import Tingeso.Web_mono.Entity.*;
 import Tingeso.Web_mono.Repository.ClientRepository;
@@ -70,6 +71,7 @@ public class LoanService {
                 .type(KardexMovementType.LOAN)
                 .quantity(1)
                 .user(username)
+                .toolName(newTool.getName())
                 .movementDate(LocalDateTime.now().withSecond(0).withNano(0))
                 .toolId(newTool.getId())
                 .build();
@@ -117,19 +119,33 @@ public class LoanService {
         if(client.getDebt() + lateFee + damageFee > 0) {
 
             client.setDebt(lateFee + damageFee + client.getDebt());
-            clientRepository.save(client);
 
         }
+
+        if(client.getClientState().toString().equals("RESTRICTED")) {
+
+            client.setClientState(ClientState.ACTIVE);
+
+        }
+
+        clientRepository.save(client);
 
         KardexEntity kardex = KardexEntity.builder()
                 .type(KardexMovementType.RETURN)
                 .quantity(1)
                 .user(username)
+                .toolName(tool.getName())
                 .movementDate(LocalDateTime.now().withSecond(0).withNano(0))
                 .toolId(tool.getId())
                 .build();
         kardexRepository.save(kardex);
 
         return loanRepository.save(loan);
+    }
+
+    public List<ClientWithMostLoansDTO> getClientWithMostLoans() {
+
+        return loanRepository.findClientsWithMostLoans();
+
     }
 }

@@ -1,5 +1,7 @@
 package Tingeso.Web_mono.Service;
 
+import Tingeso.Web_mono.Controller.models.LoansByMonthAndToolNameDTO;
+import Tingeso.Web_mono.Controller.models.MostRequestedToolDTO;
 import Tingeso.Web_mono.Entity.KardexEntity;
 import Tingeso.Web_mono.Repository.KardexRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,4 +43,14 @@ public class KardexService {
             return kardexRepository.findAll();
         }
     }
+
+    public List<LoansByMonthAndToolNameDTO> countLoansByMonthAndToolName() {
+        return kardexRepository.countLoansByMonthAndToolName();
+    }
+
+    public MostRequestedToolDTO getMostRequestedTool() {
+        return kardexRepository.findMostRequestedTool();
+    }
+
+
 }

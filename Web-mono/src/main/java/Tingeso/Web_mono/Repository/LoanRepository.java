@@ -1,5 +1,6 @@
 package Tingeso.Web_mono.Repository;
 
+import Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO;
 import Tingeso.Web_mono.Controller.models.LoanDTO;
 import Tingeso.Web_mono.Entity.ClientEntity;
 import Tingeso.Web_mono.Entity.LoanEntity;
@@ -29,6 +30,10 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
 
     @Query("SELECT new Tingeso.Web_mono.Controller.models.LoanDTO(l.id, l.loanDate, l.returnDate, l.status, l.toolLoaned.name, l.client.rut) FROM LoanEntity l")
     List<LoanDTO> findAllLoan();
+
+    @Query("SELECT new Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO(l.client.rut, COUNT(l)) " +
+            "FROM LoanEntity l GROUP BY l.client.rut ORDER BY COUNT(l) DESC LIMIT 5")
+    List<ClientWithMostLoansDTO> findClientsWithMostLoans();
 
     @Modifying
     @Query("UPDATE LoanEntity l SET l.status = 'OVERDUE' " +

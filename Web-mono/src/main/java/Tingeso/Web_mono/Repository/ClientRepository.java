@@ -13,8 +13,7 @@ public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
     @Query("UPDATE ClientEntity c SET c.clientState = 'RESTRICTED' " +
             "WHERE EXISTS (" +
             "SELECT 1 FROM LoanEntity l " +
-            "WHERE l.client.id = c.id AND l.returnDate < CURRENT_TIMESTAMP AND l.status = 'NORMAL'" +
+            "WHERE l.client.id = c.id AND l.returnDate < CURRENT_TIMESTAMP AND (l.status = 'NORMAL' OR l.status = 'OVERDUE') " +
             ") AND c.clientState != 'RESTRICTED'")
     void restrictClientsWithOverdueLoans();
-
 }
