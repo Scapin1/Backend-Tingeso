@@ -100,7 +100,7 @@ public class ToolService {
         LoanEntity loan = loanRepository.findByToolLoaned_Id(toolId);
         if (loan != null) {
             ClientEntity client = loan.getClient();
-            loan.setStatus(LoanState.FINISHED);
+            loan.setStatus(loan.getLateStatus() ? LoanState.LATE_RETURN : LoanState.FINISHED);
             loanRepository.save(loan);
             client.setDebt(client.getDebt() + tool.getFee().getRepoFee());
             clientRepository.save(client);

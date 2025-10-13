@@ -1,21 +1,19 @@
 package Tingeso.Web_mono.Service;
 
-
 import Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO;
+import Tingeso.Web_mono.Controller.models.ClientWithMostOverduesDTO;
 import Tingeso.Web_mono.Controller.models.LoanDTO;
+import Tingeso.Web_mono.Controller.models.ToolWithMostOverduesDTO;
 import Tingeso.Web_mono.Entity.*;
 import Tingeso.Web_mono.Repository.ClientRepository;
 import Tingeso.Web_mono.Repository.KardexRepository;
 import Tingeso.Web_mono.Repository.LoanRepository;
 import Tingeso.Web_mono.Repository.ToolRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -88,7 +86,7 @@ public class LoanService {
 
         if (loan == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loan not found");
-        } else if(loan.getStatus().equals(LoanState.IN_REPAIR) || loan.getStatus().equals(LoanState.FINISHED)) {
+        } else if(loan.getStatus().equals(LoanState.IN_REPAIR) || loan.getStatus().equals(LoanState.FINISHED) || loan.getStatus().equals(LoanState.LATE_RETURN)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loan already returned");
         }
 
@@ -104,6 +102,12 @@ public class LoanService {
             damageFee = tool.getFee().getMaintenanceFee();
             toolService.sentMaintenance(tool.getId(), username);
             loan.setStatus(LoanState.IN_REPAIR);
+
+        }else if (loan.getReturnDate().isBefore(LocalDate.now())) {
+
+            tool.setState(ToolStateType.AVAILABLE);
+            loan.setStatus(LoanState.LATE_RETURN);
+            toolRepository.save(tool);
 
         }else{
 
@@ -147,5 +151,13 @@ public class LoanService {
 
         return loanRepository.findClientsWithMostLoans();
 
+    }
+
+    public List<ClientWithMostOverduesDTO> getClientsWithMostOverdues() {
+        return loanRepository.findClientsWithMostOverdues();
+    }
+
+    public ToolWithMostOverduesDTO getToolWithMostOverdues() {
+        return loanRepository.findToolWithMostOverdues();
     }
 }

@@ -1,7 +1,9 @@
 package Tingeso.Web_mono.Controller;
 
 import Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO;
+import Tingeso.Web_mono.Controller.models.ClientWithMostOverduesDTO;
 import Tingeso.Web_mono.Controller.models.LoanDTO;
+import Tingeso.Web_mono.Controller.models.ToolWithMostOverduesDTO;
 import Tingeso.Web_mono.Entity.LoanEntity;
 import Tingeso.Web_mono.Service.LoanService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +36,16 @@ public class LoanController {
     @GetMapping("/clientWithMostLoans")
     public List<ClientWithMostLoansDTO> getClientWithMostLoans() {
         return loanService.getClientWithMostLoans();
+    }
+
+    @GetMapping("/clientsWithMostOverdues")
+    public List<ClientWithMostOverduesDTO> getClientsWithMostOverdues() {
+        return loanService.getClientsWithMostOverdues();
+    }
+
+    @GetMapping("/toolWithMostOverdues")
+    public ToolWithMostOverduesDTO getToolWithMostOverdues() {
+        return loanService.getToolWithMostOverdues();
     }
 
 }

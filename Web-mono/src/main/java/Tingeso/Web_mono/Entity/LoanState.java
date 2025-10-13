@@ -4,5 +4,6 @@ public enum LoanState {
     IN_REPAIR,
     NORMAL,
     FINISHED,
-    OVERDUE
+    OVERDUE,
+    LATE_RETURN
 }

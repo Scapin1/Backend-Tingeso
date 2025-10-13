@@ -33,6 +33,8 @@ public class LoanEntity {
     @Enumerated(EnumType.STRING)
     private LoanState status;
 
+    private Boolean LateStatus = false;
+
     @ManyToOne
     @JoinColumn(name="tool_loaned")
     @JsonBackReference(
