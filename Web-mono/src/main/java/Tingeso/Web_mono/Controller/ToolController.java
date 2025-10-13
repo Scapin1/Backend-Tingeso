@@ -20,8 +20,8 @@ public class ToolController {
     private ToolService toolService;
 
     @GetMapping("/getAllList")
-    public List<ToolAvailableDTO> getAllToolsList(HttpServletRequest request) {
-        return toolService.findAllList(request);
+    public List<ToolAvailableDTO> getAllToolsList() {
+        return toolService.findAllList();
     }
 
     @GetMapping("/getAll")

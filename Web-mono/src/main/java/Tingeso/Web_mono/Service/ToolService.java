@@ -65,16 +65,8 @@ public class ToolService {
         return toolRepository.findAll();
     }
 
-    public List<ToolAvailableDTO> findAllList(HttpServletRequest request) {
-        List<Object[]> results = toolRepository.findAvailableToolsGrouped();
-        List<ToolAvailableDTO> dtos = results.stream()
-                .map(obj -> new ToolAvailableDTO(
-                        (String) obj[0],
-                        (String) obj[1],
-                        ((Long) obj[2]).intValue()
-                ))
-                .collect(Collectors.toList());
-        return dtos;
+    public List<ToolAvailableDTO> findAllList() {
+        return toolRepository.findAvailableToolsGrouped();
     }
 
     public ToolEntity sentMaintenance(Long toolId, String username) {

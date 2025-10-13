@@ -19,8 +19,8 @@ public interface ToolRepository extends JpaRepository<ToolEntity, Long> {
 
     ToolEntity findTopByNameAndState(String name, ToolStateType state);
 
-    @Query("SELECT t.name, t.category, COUNT(t) FROM ToolEntity t WHERE t.state = AVAILABLE GROUP BY t.name, t.category")
-    List<Object[]> findAvailableToolsGrouped();
+    @Query("SELECT new Tingeso.Web_mono.Controller.models.ToolAvailableDTO(t.name, t.category, COUNT(t), t.fee.repoFee, t.fee.maintenanceFee, t.fee.rentalFee, t.fee.lateFee) FROM ToolEntity t WHERE t.state = Tingeso.Web_mono.Entity.ToolStateType.AVAILABLE GROUP BY t.name, t.category, t.fee")
+    List<ToolAvailableDTO> findAvailableToolsGrouped();
 
-    ToolEntity findTopByName(String name);
+
 }

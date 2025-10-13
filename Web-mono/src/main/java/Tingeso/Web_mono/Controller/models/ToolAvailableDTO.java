@@ -1,6 +1,7 @@
 package Tingeso.Web_mono.Controller.models;
 
 
+import Tingeso.Web_mono.Entity.FeeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,5 +14,9 @@ import lombok.NoArgsConstructor;
 public class ToolAvailableDTO {
     private String name;
     private String category;
-    private int stock;
+    private Long stock;
+    private int repoFee;
+    private int maintenanceFee;
+    private int rentalFee;
+    private int lateFee;
 }
