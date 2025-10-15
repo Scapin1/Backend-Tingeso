@@ -19,9 +19,10 @@ public class KardexEntity {
     private Long id;
     private Long toolId;
     private String toolName;
-    private String user;
+    private String userName;
     private int quantity;
     private LocalDateTime movementDate;
     @Enumerated(EnumType.STRING)
     private KardexMovementType type;
+
 }

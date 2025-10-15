@@ -21,16 +21,14 @@ public interface KardexRepository extends JpaRepository<KardexEntity, Long> {
     @Query("SELECT k FROM KardexEntity k WHERE k.toolId = :toolId AND k.movementDate BETWEEN :start AND :end")
     List<KardexEntity> findByToolIdAndMovementDateBetween(Long toolId, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT new Tingeso.Web_mono.Controller.models.LoansByMonthAndToolNameDTO(k.toolName, FUNCTION('MONTHNAME', k.movementDate), COUNT(k)) " +
+    @Query("SELECT new Tingeso.Web_mono.Controller.models.LoansByMonthAndToolNameDTO(k.toolName, FUNCTION('TO_CHAR', k.movementDate, 'Month'), COUNT(k)) " +
             "FROM KardexEntity k " +
             "WHERE k.type = 'LOAN' " +
-            "GROUP BY k.toolName, FUNCTION('MONTHNAME', k.movementDate)")
+            "GROUP BY k.toolName, FUNCTION('TO_CHAR', k.movementDate, 'Month')")
     List<LoansByMonthAndToolNameDTO> countLoansByMonthAndToolName();
 
-    @Query("SELECT new Tingeso.Web_mono.Controller.models.MostRequestedToolDTO(k.toolName,COUNT(*)) " +
-            "FROM KardexEntity k WHERE k.type = 'LOAN' " +
-            "GROUP BY k.toolName ORDER BY COUNT(*) DESC LIMIT 1")
-    MostRequestedToolDTO findMostRequestedTool();
+    @Query(value = "SELECT k.tool_name, COUNT(*) FROM tb_kardex k WHERE k.type IN ('LOAN', 'LATE_RETURN') GROUP BY k.tool_name ORDER BY COUNT(*) DESC", nativeQuery = true)
+    List<Object[]> findMostRequestedTool();
 
 
 }

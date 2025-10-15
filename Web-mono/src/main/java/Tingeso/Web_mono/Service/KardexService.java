@@ -49,7 +49,12 @@ public class KardexService {
     }
 
     public MostRequestedToolDTO getMostRequestedTool() {
-        return kardexRepository.findMostRequestedTool();
+        List<Object[]> results = kardexRepository.findMostRequestedTool();
+        if (results == null || results.isEmpty()) return null;
+        Object[] row = results.get(0);
+        String toolName = row[0] != null ? row[0].toString() : null;
+        Long requestCount = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+        return new MostRequestedToolDTO(toolName, requestCount);
     }
 
 

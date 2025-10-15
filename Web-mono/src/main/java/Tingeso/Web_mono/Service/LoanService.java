@@ -38,13 +38,18 @@ public class LoanService {
     }
 
     public LoanEntity addLoan(LoanEntity loan, String username) {
+        if (loan == null || loan.getClient() == null || loan.getToolLoaned() == null || loan.getReturnDate() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loan, client, tool or return date cannot be null");
+        }
         Long clientId = loan.getClient().getId();
         LocalDate loanDate = LocalDate.now();
         LocalDate returnDate = loan.getReturnDate();
         String toolName = loan.getToolLoaned().getName();
         ToolEntity newTool = toolRepository.findTopByNameAndState(toolName,ToolStateType.AVAILABLE);
         ClientEntity newClient = clientRepository.getReferenceById(clientId);
-
+        if (newTool == null || newClient == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tool or client not found");
+        }
         if(toolRepository.getStock(newTool.getName()) < 1) {
             throw new ResponseStatusException(HttpStatus.LOCKED,"Not enough stock for the tool");
         }else if(newClient.getClientState().toString().equals("RESTRICTED") || loanRepository.existsOverdueLoanByClientId(newClient.getId()) ) {
@@ -68,7 +73,7 @@ public class LoanService {
         KardexEntity kardex = KardexEntity.builder()
                 .type(KardexMovementType.LOAN)
                 .quantity(1)
-                .user(username)
+                .userName(username)
                 .toolName(newTool.getName())
                 .movementDate(LocalDateTime.now().withSecond(0).withNano(0))
                 .toolId(newTool.getId())
@@ -126,6 +131,9 @@ public class LoanService {
 
         }
 
+        if (client.getClientState() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Client state cannot be null");
+        }
         if(client.getClientState().toString().equals("RESTRICTED")) {
 
             client.setClientState(ClientState.ACTIVE);
@@ -137,7 +145,7 @@ public class LoanService {
         KardexEntity kardex = KardexEntity.builder()
                 .type(KardexMovementType.RETURN)
                 .quantity(1)
-                .user(username)
+                .userName(username)
                 .toolName(tool.getName())
                 .movementDate(LocalDateTime.now().withSecond(0).withNano(0))
                 .toolId(tool.getId())

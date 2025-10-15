@@ -34,7 +34,7 @@ public class ClientEntity {
     @Enumerated(EnumType.STRING)
     private ClientState clientState;
 
-    private int Debt;
+    private int debt;
 
     @OneToMany(mappedBy = "client")
     private List<LoanEntity> loans;

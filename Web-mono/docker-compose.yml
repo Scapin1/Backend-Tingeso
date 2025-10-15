@@ -1,0 +1,67 @@
+services:
+    db:
+        image: postgres:16
+        container_name: postgres-tingeso
+        restart: always
+        environment:
+            POSTGRES_DB: tingeso
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: Lucciano2003
+        ports:
+            - "5433:5432"
+        volumes:
+            - db_data:/var/lib/postgresql/data
+
+    backend:
+        image: lscapini/toolrent-backend:latest
+        container_name: toolrent-backend
+        depends_on:
+            - db
+        environment:
+            DB_URL: jdbc:postgresql://db:5432/tingeso
+            DB_USERNAME: root
+            DB_PASSWORD: Lucciano2003
+        ports:
+            - "8080:8080"
+        restart: always
+
+    frontend:
+        image: lscapini/toolrent-frontend:latest
+        container_name: toolrent-frontend
+        depends_on:
+            - backend
+        ports:
+            - "80:80"
+        restart: always
+
+    keycloak-db:
+        image: postgres:16
+        container_name: postgres-keycloak
+        restart: always
+        environment:
+            POSTGRES_DB: keycloak
+            POSTGRES_USER: keycloak
+            POSTGRES_PASSWORD: keycloakpass
+        volumes:
+            - keycloak_db_data:/var/lib/postgresql/data
+
+    keycloak:
+        image: quay.io/keycloak/keycloak:24.0.3
+        container_name: keycloak
+        environment:
+            KEYCLOAK_ADMIN: admin
+            KEYCLOAK_ADMIN_PASSWORD: admin
+            KC_DB: postgres
+            KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+            KC_DB_USERNAME: keycloak
+            KC_DB_PASSWORD: keycloakpass
+        command: start-dev
+        ports:
+            - "9090:8080"
+        depends_on:
+            - keycloak-db
+        restart: always
+
+volumes:
+    db_data:
+    keycloak_db_data:
