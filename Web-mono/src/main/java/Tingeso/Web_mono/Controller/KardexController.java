@@ -9,9 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -52,6 +51,20 @@ public class KardexController {
     @GetMapping("/mostRequestedTool")
     public MostRequestedToolDTO getMostRequestedTool() {
         return kardexService.getMostRequestedTool();
+    }
+
+    @GetMapping("/mostRequestedToolInRange")
+    public MostRequestedToolDTO getMostRequestedToolInRange(@RequestParam String startDate, @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        return kardexService.getMostRequestedToolInRange(start, end);
+    }
+
+    @GetMapping("/requestedToolsInRange")
+    public List<MostRequestedToolDTO> getRequestedToolsInRange(@RequestParam String startDate, @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        return kardexService.getRequestedToolsInRange(start, end);
     }
 
 }

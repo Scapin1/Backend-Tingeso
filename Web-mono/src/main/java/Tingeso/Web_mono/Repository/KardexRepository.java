@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import Tingeso.Web_mono.Controller.models.LoansByMonthAndToolNameDTO;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,5 +30,7 @@ public interface KardexRepository extends JpaRepository<KardexEntity, Long> {
     @Query(value = "SELECT k.tool_name, COUNT(*) FROM tb_kardex k WHERE k.type IN ('LOAN', 'LATE_RETURN') GROUP BY k.tool_name ORDER BY COUNT(*) DESC", nativeQuery = true)
     List<Object[]> findMostRequestedTool();
 
+    @Query("SELECT new Tingeso.Web_mono.Controller.models.MostRequestedToolDTO(k.toolName, COUNT(k)) FROM KardexEntity k WHERE (k.type = 'LOAN' OR k.type = 'LATE_RETURN') AND DATE(k.movementDate) BETWEEN :start AND :end GROUP BY k.toolName ORDER BY COUNT(k) DESC")
+    List<MostRequestedToolDTO> findRequestedToolsInRangeDTO(LocalDate start, LocalDate end);
 
 }

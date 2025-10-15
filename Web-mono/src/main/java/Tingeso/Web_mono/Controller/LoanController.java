@@ -48,4 +48,33 @@ public class LoanController {
         return loanService.getToolWithMostOverdues();
     }
 
+    @GetMapping("/mostLoansInRange")
+    public ClientWithMostLoansDTO getMostLoansInRange(@RequestParam String startDate, @RequestParam String endDate) {
+        java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+        java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+        List<ClientWithMostLoansDTO> results = loanService.getClientsWithMostLoansInRange(start, end);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    @GetMapping("/clientsWithMostLoansInRange")
+    public List<ClientWithMostLoansDTO> getClientsWithMostLoansInRange(@RequestParam String startDate, @RequestParam String endDate) {
+        java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+        java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+        return loanService.getClientsWithMostLoansInRange(start, end);
+    }
+
+    @GetMapping("/clientsWithMostOverduesInRange")
+    public List<ClientWithMostOverduesDTO> getClientsWithMostOverduesInRange(@RequestParam String startDate, @RequestParam String endDate) {
+        java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+        java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+        return loanService.getClientsWithMostOverduesInRange(start, end);
+    }
+
+    @GetMapping("/toolWithMostOverduesInRange")
+    public ToolWithMostOverduesDTO getToolWithMostOverduesInRange(@RequestParam String startDate, @RequestParam String endDate) {
+        java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+        java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+        return loanService.getToolWithMostOverduesInRange(start, end);
+    }
+
 }

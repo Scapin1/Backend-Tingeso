@@ -168,4 +168,19 @@ public class LoanService {
     public ToolWithMostOverduesDTO getToolWithMostOverdues() {
         return loanRepository.findToolWithMostOverdues();
     }
+
+    public List<ClientWithMostLoansDTO> getClientsWithMostLoansInRange(java.time.LocalDate start, java.time.LocalDate end) {
+        return loanRepository.findClientsWithMostLoansInRange(start, end)
+                .stream().limit(5).toList();
+    }
+
+    public List<ClientWithMostOverduesDTO> getClientsWithMostOverduesInRange(java.time.LocalDate start, java.time.LocalDate end) {
+        return loanRepository.findClientsWithMostOverduesInRange(start, end)
+                .stream().limit(5).toList();
+    }
+
+    public ToolWithMostOverduesDTO getToolWithMostOverduesInRange(java.time.LocalDate start, java.time.LocalDate end) {
+        List<ToolWithMostOverduesDTO> results = loanRepository.findToolsWithMostOverduesInRange(start, end);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
 }

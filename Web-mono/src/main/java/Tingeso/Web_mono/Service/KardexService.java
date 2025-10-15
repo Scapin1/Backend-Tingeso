@@ -7,6 +7,7 @@ import Tingeso.Web_mono.Repository.KardexRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,6 +49,15 @@ public class KardexService {
         return kardexRepository.countLoansByMonthAndToolName();
     }
 
+    public MostRequestedToolDTO getMostRequestedToolInRange(LocalDate start, LocalDate end) {
+        List<MostRequestedToolDTO> results = kardexRepository.findRequestedToolsInRangeDTO(start, end);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    public List<MostRequestedToolDTO> getRequestedToolsInRange(LocalDate start, LocalDate end) {
+        return kardexRepository.findRequestedToolsInRangeDTO(start, end);
+    }
+
     public MostRequestedToolDTO getMostRequestedTool() {
         List<Object[]> results = kardexRepository.findMostRequestedTool();
         if (results == null || results.isEmpty()) return null;
@@ -56,6 +66,4 @@ public class KardexService {
         Long requestCount = row[1] != null ? ((Number) row[1]).longValue() : 0L;
         return new MostRequestedToolDTO(toolName, requestCount);
     }
-
-
 }
