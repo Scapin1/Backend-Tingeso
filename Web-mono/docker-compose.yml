@@ -1,6 +1,6 @@
 services:
     db:
-        image: postgres:16
+        image: postgres:17-alpine
         container_name: postgres-tingeso
         restart: always
         environment:
@@ -35,7 +35,7 @@ services:
         restart: always
 
     keycloak-db:
-        image: postgres:16
+        image: postgres:17-alpine
         container_name: postgres-keycloak
         restart: always
         environment:

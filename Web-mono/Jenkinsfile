@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    triggers {
+        githubPush()
+    }
+
+    tools {
+        maven 'Maven_3.9.10'
+    }
+
+    environment {
+        DOCKER_IMAGE = "lscapini/toolrent-backend:latest"
+        REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                bat 'mvn clean compile'
+            }
+        }
+        stage('Test') {
+            steps {
+                bat 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Package') {
+            steps {
+                bat 'mvn package -DskipTests=true'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}")
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('', "${REGISTRY_CREDENTIALS}") {
+                        docker.image("${DOCKER_IMAGE}").push()
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline completado exitosamente.'
+        }
+        failure {
+            echo 'El pipeline ha fallado.'
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
