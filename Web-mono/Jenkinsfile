@@ -68,8 +68,8 @@ pipeline {
 
         stage('Build Frontend Image (Nginx)') {
             // Asegura el PATH con la versión de Node configurada
-            tool 'NodeJS_22_18_0'
             steps {
+                tool 'NodeJS_22_18_0'
                 // Entra al subdirectorio donde está el código del frontend
                 dir(env.FRONTEND_DIR) {
                     echo '1. Instalando dependencias y construyendo el Frontend...'
