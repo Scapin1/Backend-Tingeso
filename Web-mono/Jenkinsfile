@@ -14,7 +14,7 @@ pipeline {
     tools {
         // Asume que estas herramientas están configuradas en 'Global Tool Configuration'
         maven 'Maven_3.9.10'
-        node 'NodeJS_22_18_0'
+        nodejs 'NodeJS_22_18_0'
     }
 
     environment {
