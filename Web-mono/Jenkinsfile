@@ -1,33 +1,63 @@
+// Jenkinsfile (Declarativo)
+
 pipeline {
     agent any
 
+    // ------------------------------------------------------------------
+    // 1. CONFIGURACIÓN INICIAL Y HERRAMIENTAS
+    // ------------------------------------------------------------------
     triggers {
-        githubPush()
+        // Dispara la construcción al hacer 'git push' al repositorio principal (backend)
+        githubPush() 
     }
 
     tools {
+        // Asume que estas herramientas están configuradas en 'Global Tool Configuration'
         maven 'Maven_3.9.10'
+        nodejs 'NodeJS_22_18_0'
     }
 
     environment {
-        DOCKER_IMAGE = "lscapini/toolrent-backend:latest"
-        REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+        // ⚠️ 1. CAMBIAR POR EL ID DE TU CREDENCIAL EN JENKINS
+        REGISTRY_CREDENTIALS = 'dockerhub-credentials-id'
+
+        // Backend (Java/Maven)
+        BACKEND_IMAGE = "lscapini/toolrent-backend:latest"
+
+        // Frontend (Node.js/Nginx)
+        FRONTEND_IMAGE = "lscapini/toolrent-frontend:latest"
+        // ⚠️ 2. CAMBIAR POR LA URL REAL DE TU REPOSITORIO DEL FRONTEND
+        FRONTEND_REPO_URL = 'https://github.com/Scapin1/Frontend-Tingeso'
+
+        // Nombre del subdirectorio donde se clonará el frontend
+        FRONTEND_DIR = 'frontend-app'
     }
 
+    // ------------------------------------------------------------------
+    // 2. ETAPAS DEL PIPELINE
+    // ------------------------------------------------------------------
     stages {
-        stage('Checkout') {
+
+        stage('Checkout Repositorios') {
             steps {
+                echo "Clonando Backend (Repositorio principal) a la raíz del workspace..."
                 checkout scm
+
+                // Clonación del repositorio del Frontend en el subdirectorio definido
+                echo "Clonando Frontend (Repositorio secundario) en '${env.FRONTEND_DIR}'..."
+                dir(env.FRONTEND_DIR) {
+                    git(
+                        url: env.FRONTEND_REPO_URL,
+                        branch: 'main' // Asegúrate de que esta es la rama correcta
+                    )
+                }
             }
         }
-        stage('Build') {
+
+        stage('Build & Test Backend') {
             steps {
-                bat 'mvn clean compile'
-            }
-        }
-        stage('Test') {
-            steps {
-                bat 'mvn test'
+                echo 'Iniciando limpieza, compilación y pruebas del Backend (Maven)...'
+                bat 'mvn clean install -DskipTests=false'
             }
             post {
                 always {
@@ -35,37 +65,63 @@ pipeline {
                 }
             }
         }
-        stage('Package') {
+
+        stage('Build Frontend Image (Nginx)') {
+            // Asegura el PATH con la versión de Node configurada
+            tool 'NodeJS_22_18_0'
             steps {
-                bat 'mvn package -DskipTests=true'
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}")
+                // Entra al subdirectorio donde está el código del frontend
+                dir(env.FRONTEND_DIR) {
+                    echo '1. Instalando dependencias y construyendo el Frontend...'
+                    bat 'npm install'
+                    bat 'npm run build'
+
+                    echo '2. Creando la Imagen Docker del Frontend...'
+                    script {
+                        // Construye la imagen asumiendo que el Dockerfile está en este directorio
+                        docker.build("${FRONTEND_IMAGE}")
+                    }
                 }
             }
         }
-        stage('Push Docker Image') {
+
+        stage('Build Backend Image') {
             steps {
+                echo 'Creando Imagen Docker del Backend...'
                 script {
+                    // Construye la imagen asumiendo que el Dockerfile del backend está en la raíz
+                    docker.build("${BACKEND_IMAGE}")
+                }
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+                echo 'Subiendo ambas imágenes a Docker Hub...'
+                script {
+                    // Usa la credencial configurada para autenticación
                     docker.withRegistry('', "${REGISTRY_CREDENTIALS}") {
-                        docker.image("${DOCKER_IMAGE}").push()
+                        docker.image("${FRONTEND_IMAGE}").push()
+                        docker.image("${BACKEND_IMAGE}").push()
                     }
                 }
             }
         }
     }
+
+    // ------------------------------------------------------------------
+    // 3. ACCIONES POST-CONSTRUCCIÓN
+    // ------------------------------------------------------------------
     post {
         success {
-            echo 'Pipeline completado exitosamente.'
+            echo '✅ Pipeline completado exitosamente. Ambas imágenes subidas.'
         }
         failure {
-            echo 'El pipeline ha fallado.'
+            echo '❌ El pipeline ha fallado. Revisar logs.'
         }
+        // Siempre limpia el workspace al finalizar para liberar espacio
         always {
-            cleanWs()
+            cleanWs() 
         }
     }
 }
