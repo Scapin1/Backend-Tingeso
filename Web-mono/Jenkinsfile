@@ -56,17 +56,17 @@ pipeline {
 
         stage('Build & Test Backend') {
             steps {
-                // ⚠️ CAMBIAR: Entrar en el directorio donde está el pom.xml
-                dir('Backend-Tingeso') {
+                // ⚠️ CAMBIO CRÍTICO: Entrar en el subdirectorio 'Web-mono'
+                dir('Web-mono') {
                     echo 'Iniciando limpieza, compilación y pruebas del Backend (Maven)...'
-                    // Ejecuta Maven dentro del subdirectorio
+                    // Maven se ejecuta DENTRO de C:\...\ToolRent\Web-mono
                     bat 'mvn clean install -DskipTests=false'
                 }
             }
             post {
                 always {
-                    // Nota: si las pruebas fallan, la ruta del .xml también debe ser relativa al workspace
-                    junit 'Backend-Tingeso/target/surefire-reports/*.xml'
+                    // Actualizar la ruta del reporte JUnit para que apunte DENTRO de 'Web-mono'
+                    junit 'Web-mono/target/surefire-reports/*.xml'
                 }
             }
         }
