@@ -70,7 +70,7 @@ pipeline {
                 }
             }
         }
-                
+
 
         stage('Build Frontend Image (Nginx)') {
             // Asegura el PATH con la versión de Node configurada
@@ -94,9 +94,12 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 echo 'Creando Imagen Docker del Backend...'
-                script {
-                    // Construye la imagen asumiendo que el Dockerfile del backend está en la raíz
-                    docker.build("${BACKEND_IMAGE}")
+
+                dir('Web-mono') {
+                    script {
+                        // Docker buscará el Dockerfile DENTRO de Web-mono
+                        docker.build("${BACKEND_IMAGE}")
+                    }
                 }
             }
         }
