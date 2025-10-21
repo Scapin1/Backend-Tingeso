@@ -56,15 +56,21 @@ pipeline {
 
         stage('Build & Test Backend') {
             steps {
-                echo 'Iniciando limpieza, compilación y pruebas del Backend (Maven)...'
-                bat 'mvn clean install -DskipTests=false'
+                // ⚠️ CAMBIAR: Entrar en el directorio donde está el pom.xml
+                dir('Backend-Tingeso') {
+                    echo 'Iniciando limpieza, compilación y pruebas del Backend (Maven)...'
+                    // Ejecuta Maven dentro del subdirectorio
+                    bat 'mvn clean install -DskipTests=false'
+                }
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    // Nota: si las pruebas fallan, la ruta del .xml también debe ser relativa al workspace
+                    junit 'Backend-Tingeso/target/surefire-reports/*.xml'
                 }
             }
         }
+                
 
         stage('Build Frontend Image (Nginx)') {
             // Asegura el PATH con la versión de Node configurada
