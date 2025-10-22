@@ -19,4 +19,4 @@ Proyecto backend desarrollado en Java con Spring Boot. API y lógica del negocio
 4. `src/test/java` \- Pruebas unitarias / de integración
 
 ## Licencia
-Indicar la licencia del proyecto en `LICENSE` (ejemplo: MIT).
+Indicar la licencia del proyecto en `LICENSE`.
