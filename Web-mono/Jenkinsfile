@@ -79,6 +79,30 @@ pipeline {
                 // Entra al subdirectorio donde está el código del frontend
                 dir(env.FRONTEND_DIR) {
                     echo '1. Instalando dependencias y construyendo el Frontend...'
+
+                    // Crear un archivo .env en tiempo de build usando credenciales seguras de Jenkins.
+                    // NOTA: Debes crear en Jenkins 3 credenciales de tipo "Secret text" con estos IDs:
+                    // - VITE_API_HOST_CRED
+                    // - VITE_API_PORT_CRED
+                    // - VITE_KEYCLOAK_URL_CRED
+                    // Estos valores nunca se hardcodean ni se suben al repositorio.
+                    script {
+                        withCredentials([string(credentialsId: 'VITE_API_HOST_CRED', variable: 'VITE_API_HOST'),
+                                         string(credentialsId: 'VITE_API_PORT_CRED', variable: 'VITE_API_PORT'),
+                                         string(credentialsId: 'VITE_KEYCLOAK_URL_CRED', variable: 'VITE_KEYCLOAK_URL')]) {
+                            // Construir el contenido del .env. Vite lee variables que comienzan con VITE_ en tiempo de build.
+                            def envContent = """
+VITE_API_HOST=${VITE_API_HOST}
+VITE_API_PORT=${VITE_API_PORT}
+VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
+""".stripIndent()
+
+                            // Escribir el archivo .env en el workspace del frontend (temporal y no versionado)
+                            writeFile file: '.env', text: envContent
+                            echo 'Archivo .env creado desde credenciales de Jenkins (contenido oculto por seguridad).'
+                        }
+                    }
+
                     bat 'npm install'
                     bat 'npm run build'
 
