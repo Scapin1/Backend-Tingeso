@@ -103,13 +103,21 @@ VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
                         }
                     }
 
-                    bat 'npm install'
-                    bat 'npm run build'
+                    // --- Optimización 1: usar flags de npm para acelerar e intentar usar cache local ---
+                    // --prefer-offline: intenta usar paquetes del cache cuando sea posible
+                    // --no-audit / --no-fund: evita operaciones de red innecesarias
+                    // Forzamos CI=true para que las herramientas detecten entorno CI y optimicen la build
+                    timeout(time: 20, unit: 'MINUTES') {
+                        bat "set CI=true && npm ci --prefer-offline --no-audit --no-fund"
+                        bat "set CI=true && npm run build"
+                    }
 
-                    echo '2. Creando la Imagen Docker del Frontend...'
+                    echo '2. Creando la Imagen Docker del Frontend (BuildKit habilitado para mejores caches)...'
                     script {
-                        // Construye la imagen asumiendo que el Dockerfile está en este directorio
-                        docker.build("${FRONTEND_IMAGE}")
+                        // Usamos docker CLI con BuildKit activado para aprovechar capas y caches.
+                        // Nota: esto evita dependencias en el plugin docker-pipeline y suele funcionar mejor
+                        // con opciones avanzadas si se necesita (buildx, cache-to, etc.).
+                        bat "set DOCKER_BUILDKIT=1 && set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${FRONTEND_IMAGE} ."
                     }
                 }
             }
@@ -121,8 +129,8 @@ VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
 
                 dir('Web-mono') {
                     script {
-                        // Docker buscará el Dockerfile DENTRO de Web-mono
-                        docker.build("${BACKEND_IMAGE}")
+                        // Usamos docker build con BuildKit activado para mayor consistencia y mejores caches
+                        bat "set DOCKER_BUILDKIT=1 && set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${BACKEND_IMAGE} ."
                     }
                 }
             }
