@@ -21,10 +21,24 @@ public interface KardexRepository extends JpaRepository<KardexEntity, Long> {
     @Query("SELECT k FROM KardexEntity k WHERE k.toolId = :toolId AND k.movementDate BETWEEN :start AND :end")
     List<KardexEntity> findByToolIdAndMovementDateBetween(Long toolId, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT new Tingeso.Web_mono.Controller.models.LoansByMonthAndToolNameDTO(k.toolName, FUNCTION('TO_CHAR', k.movementDate, 'Month'), COUNT(k)) " +
-            "FROM KardexEntity k " +
-            "WHERE k.type = 'LOAN' " +
-            "GROUP BY k.toolName, FUNCTION('TO_CHAR', k.movementDate, 'Month')")
+    @Query("SELECT new Tingeso.Web_mono.Controller.models.LoansByMonthAndToolNameDTO("
+            + "k.toolName, "
+            + "CASE WHEN MONTH(k.movementDate) = 1 THEN 'enero' "
+            + "WHEN MONTH(k.movementDate) = 2 THEN 'febrero' "
+            + "WHEN MONTH(k.movementDate) = 3 THEN 'marzo' "
+            + "WHEN MONTH(k.movementDate) = 4 THEN 'abril' "
+            + "WHEN MONTH(k.movementDate) = 5 THEN 'mayo' "
+            + "WHEN MONTH(k.movementDate) = 6 THEN 'junio' "
+            + "WHEN MONTH(k.movementDate) = 7 THEN 'julio' "
+            + "WHEN MONTH(k.movementDate) = 8 THEN 'agosto' "
+            + "WHEN MONTH(k.movementDate) = 9 THEN 'septiembre' "
+            + "WHEN MONTH(k.movementDate) = 10 THEN 'octubre' "
+            + "WHEN MONTH(k.movementDate) = 11 THEN 'noviembre' "
+            + "WHEN MONTH(k.movementDate) = 12 THEN 'diciembre' "
+            + "ELSE '' END, COUNT(k)) "
+            + "FROM KardexEntity k "
+            + "WHERE k.type = 'LOAN' "
+            + "GROUP BY k.toolName, MONTH(k.movementDate)")
     List<LoansByMonthAndToolNameDTO> countLoansByMonthAndToolName();
 
     @Query(value = "SELECT k.tool_name, COUNT(*) FROM tb_kardex k WHERE k.type IN ('LOAN', 'LATE_RETURN') GROUP BY k.tool_name ORDER BY COUNT(*) DESC", nativeQuery = true)
