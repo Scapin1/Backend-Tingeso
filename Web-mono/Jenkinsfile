@@ -54,70 +54,73 @@ pipeline {
             }
         }
 
-        stage('Build & Test Backend') {
-            steps {
-                // ⚠️ CAMBIO CRÍTICO: Entrar en el subdirectorio 'Web-mono'
-                dir('Web-mono') {
-                    echo 'Iniciando limpieza, compilación y pruebas del Backend (Maven)...'
-                    // Maven se ejecuta DENTRO de C:\...\ToolRent\Web-mono
-                    bat 'mvn clean install -DskipTests=false'
+        stage('Build & Test Parallel') {
+            parallel {
+                stage('Build & Test Backend') {
+                    steps {
+                        // ⚠️ CAMBIO CRÍTICO: Entrar en el subdirectorio 'Web-mono'
+                        dir('Web-mono') {
+                            echo 'Iniciando limpieza, compilación y pruebas del Backend (Maven)...'
+                            // Maven se ejecuta DENTRO de C:\...\ToolRent\Web-mono
+                            bat 'mvn clean install -DskipTests=false'
+                        }
+                    }
+                    post {
+                        always {
+                            // Actualizar la ruta del reporte JUnit para que apunte DENTRO de 'Web-mono'
+                            junit 'Web-mono/target/surefire-reports/*.xml'
+                        }
+                    }
                 }
-            }
-            post {
-                always {
-                    // Actualizar la ruta del reporte JUnit para que apunte DENTRO de 'Web-mono'
-                    junit 'Web-mono/target/surefire-reports/*.xml'
-                }
-            }
-        }
 
+                stage('Build Frontend Image (Nginx)') {
+                    // Asegura el PATH con la versión de Node configurada
+                    steps {
+                        tool 'NodeJS_22_18_0'
+                        // Entra al subdirectorio donde está el código del frontend
+                        dir(env.FRONTEND_DIR) {
+                            echo '1. Instalando dependencias y construyendo el Frontend...'
 
-        stage('Build Frontend Image (Nginx)') {
-            // Asegura el PATH con la versión de Node configurada
-            steps {
-                tool 'NodeJS_22_18_0'
-                // Entra al subdirectorio donde está el código del frontend
-                dir(env.FRONTEND_DIR) {
-                    echo '1. Instalando dependencias y construyendo el Frontend...'
-
-                    // Crear un archivo .env en tiempo de build usando credenciales seguras de Jenkins.
-                    // NOTA: Debes crear en Jenkins 3 credenciales de tipo "Secret text" con estos IDs:
-                    // - VITE_API_HOST_CRED
-                    // - VITE_API_PORT_CRED
-                    // - VITE_KEYCLOAK_URL_CRED
-                    // Estos valores nunca se hardcodean ni se suben al repositorio.
-                    script {
-                        withCredentials([string(credentialsId: 'VITE_API_HOST_CRED', variable: 'VITE_API_HOST'),
-                                         string(credentialsId: 'VITE_API_PORT_CRED', variable: 'VITE_API_PORT'),
-                                         string(credentialsId: 'VITE_KEYCLOAK_URL_CRED', variable: 'VITE_KEYCLOAK_URL')]) {
-                            // Construir el contenido del .env. Vite lee variables que comienzan con VITE_ en tiempo de build.
-                            def envContent = """
+                            // Crear un archivo .env en tiempo de build usando credenciales seguras de Jenkins.
+                            // NOTA: Debes crear en Jenkins 3 credenciales de tipo "Secret text" con estos IDs:
+                            // - VITE_API_HOST_CRED
+                            // - VITE_API_PORT_CRED
+                            // - VITE_KEYCLOAK_URL_CRED
+                            // Estos valores nunca se hardcodean ni se suben al repositorio.
+                            script {
+                                withCredentials([string(credentialsId: 'VITE_API_HOST_CRED', variable: 'VITE_API_HOST'),
+                                                 string(credentialsId: 'VITE_API_PORT_CRED', variable: 'VITE_API_PORT'),
+                                                 string(credentialsId: 'VITE_KEYCLOAK_URL_CRED', variable: 'VITE_KEYCLOAK_URL')]) {
+                                    // Construir el contenido del .env. Vite lee variables que comienzan con VITE_ en tiempo de build.
+                                    def envContent = """
 VITE_API_HOST=${VITE_API_HOST}
 VITE_API_PORT=${VITE_API_PORT}
 VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
 """.stripIndent()
 
-                            // Escribir el archivo .env en el workspace del frontend (temporal y no versionado)
-                            writeFile file: '.env', text: envContent
-                            echo 'Archivo .env creado desde credenciales de Jenkins (contenido oculto por seguridad).'
+                                    // Escribir el archivo .env en el workspace del frontend (temporal y no versionado)
+                                    writeFile file: '.env', text: envContent
+                                    echo 'Archivo .env creado desde credenciales de Jenkins (contenido oculto por seguridad).'
+                                }
+                            }
+
+                            // --- Optimización 1: usar flags de npm para acelerar e intentar usar cache local ---
+                            // --prefer-offline: intenta usar paquetes del cache cuando sea posible
+                            // --no-audit / --no-fund: evita operaciones de red innecesarias
+                            // Forzamos CI=true para que las herramientas detecten entorno CI y optimicen la build
+                            timeout(time: 20, unit: 'MINUTES') {
+                                bat "set CI=true && npm ci --prefer-offline --no-audit --no-fund"
+                                bat "set CI=true && npm run build"
+                            }
+
+                            echo '2. Creando la Imagen Docker del Frontend (BuildKit habilitado para mejores caches)...'
+                            script {
+                                // Usamos docker CLI con BuildKit activado para aprovechar capas y caches.
+                                // Nota: esto evita dependencias en el plugin docker-pipeline y suele funcionar mejor
+                                // con opciones avanzadas si se necesita (buildx, cache-to, etc.).
+                                bat "set DOCKER_BUILDKIT=1&&set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${FRONTEND_IMAGE} ."
+                            }
                         }
-                    }
-
-                    // --- Optimización 1: usar flags de npm para acelerar e intentar usar cache local ---
-                    // --prefer-offline: intenta usar paquetes del cache cuando sea posible
-                    // --no-audit / --no-fund: evita operaciones de red innecesarias
-                    // Forzamos CI=true para que las herramientas detecten entorno CI y optimicen la build
-                    timeout(time: 20, unit: 'MINUTES') {
-                        bat "set CI=true && npm ci --prefer-offline --no-audit --no-fund"
-                        bat "set CI=true && npm run build"
-                    }
-
-                    echo '2. Creando la Imagen Docker del Frontend (BuildKit habilitado para mejores caches)...'
-                    script {
-                        // Usamos docker CLI con BuildKit activado para aprovechar capas y caches.
-                        // Nota: esto evita dependencias en el plugin docker-pipeline y suele funcionar mejor
-                        // con opciones avanzadas si se necesita (buildx, cache-to, etc.).
-                        bat "set DOCKER_BUILDKIT=1&&set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${FRONTEND_IMAGE} ."
                     }
                 }
             }
