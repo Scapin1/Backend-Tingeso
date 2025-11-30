@@ -1,4 +1,3 @@
-```
 // Jenkinsfile (Declarativo)
 
 pipeline {
@@ -151,4 +150,3 @@ VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
         // }
     }
 }
-```
