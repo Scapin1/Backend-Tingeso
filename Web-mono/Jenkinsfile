@@ -48,7 +48,12 @@ pipeline {
                 dir(env.FRONTEND_DIR) {
                     git(
                         url: env.FRONTEND_REPO_URL,
-```
+                        branch: 'main' // Asegúrate de que esta es la rama correcta
+                    )
+                }
+            }
+        }
+    }
 // Jenkinsfile (Declarativo)
 
 pipeline {
@@ -222,4 +227,3 @@ VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
         // }
     }
 }
-```
