@@ -1,3 +1,4 @@
+```
 // Jenkinsfile (Declarativo)
 
 pipeline {
@@ -53,73 +54,30 @@ pipeline {
                 }
             }
         }
-    }
-// Jenkinsfile (Declarativo)
 
-pipeline {
-    agent any
-
-    // ------------------------------------------------------------------
-    // 1. CONFIGURACIÓN INICIAL Y HERRAMIENTAS
-    // ------------------------------------------------------------------
-    triggers {
-        // Dispara la construcción al hacer 'git push' al repositorio principal (backend)
-        githubPush() 
-    }
-
-    tools {
-        // Asume que estas herramientas están configuradas en 'Global Tool Configuration'
-        maven 'Maven_3.9.10'
-        nodejs 'NodeJS_22_18_0'
-    }
-
-    environment {
-        // ⚠️ 1. CAMBIAR POR EL ID DE TU CREDENCIAL EN JENKINS
-        REGISTRY_CREDENTIALS = 'dockerhub-credentials-id'
-
-        // Backend (Java/Maven)
-        BACKEND_IMAGE = "lscapini/toolrent-backend:latest"
-
-        // Frontend (Node.js/Nginx)
-        FRONTEND_IMAGE = "lscapini/toolrent-frontend:latest"
-        // ⚠️ 2. CAMBIAR POR LA URL REAL DE TU REPOSITORIO DEL FRONTEND
-        FRONTEND_REPO_URL = 'https://github.com/Scapin1/Frontend-Tingeso'
-
-        // Nombre del subdirectorio donde se clonará el frontend
-        FRONTEND_DIR = 'frontend-app'
-    }
-
-    // ------------------------------------------------------------------
-    // 2. ETAPAS DEL PIPELINE
-    // ------------------------------------------------------------------
-    stages {
-
-        stage('Checkout Repositorios') {
-            steps {
-                echo "Clonando Backend (Repositorio principal) a la raíz del workspace..."
-                checkout scm
-
-                // Clonación del repositorio del Frontend en el subdirectorio definido
-                echo "Clonando Frontend (Repositorio secundario) en '${env.FRONTEND_DIR}'..."
-                dir(env.FRONTEND_DIR) {
-                    git(
-                        url: env.FRONTEND_REPO_URL,
-                        branch: 'main' // Asegúrate de que esta es la rama correcta
-                    )
-                }
-            }
-        }
-
-        stage('Build & Test Parallel') {
+        stage('Build, Test & Push Parallel') {
             parallel {
-                stage('Build & Test Backend') {
+                stage('Backend: Build, Test & Push') {
                     steps {
-                        // ⚠️ CAMBIO CRÍTICO: Entrar en el subdirectorio 'Web-mono'
+                        // 1. Build & Test (Maven)
                         dir('Web-mono') {
                             echo 'Iniciando compilación y pruebas del Backend (Maven)...'
                             // OPTIMIZACIÓN: Quitamos 'clean' para aprovechar compilación incremental
-                            // Maven se ejecuta DENTRO de C:\...\ToolRent\Web-mono
                             bat 'mvn install -DskipTests=false'
+                            
+                            echo 'Creando Imagen Docker del Backend...'
+                            script {
+                                // Usamos docker build con BuildKit activado
+                                bat "set DOCKER_BUILDKIT=1&&set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${BACKEND_IMAGE} ."
+                            }
+                        }
+                        
+                        // 2. Push Image
+                        echo 'Subiendo imagen Backend a Docker Hub...'
+                        script {
+                            docker.withRegistry('', "${REGISTRY_CREDENTIALS}") {
+                                docker.image("${BACKEND_IMAGE}").push()
+                            }
                         }
                     }
                     post {
@@ -130,80 +88,47 @@ pipeline {
                     }
                 }
 
-                stage('Build Frontend Image (Nginx)') {
-                    // Asegura el PATH con la versión de Node configurada
+                stage('Frontend: Build & Push') {
                     steps {
                         tool 'NodeJS_22_18_0'
                         // Entra al subdirectorio donde está el código del frontend
                         dir(env.FRONTEND_DIR) {
                             echo '1. Instalando dependencias y construyendo el Frontend...'
 
-                            // Crear un archivo .env en tiempo de build usando credenciales seguras de Jenkins.
-                            // NOTA: Debes crear en Jenkins 3 credenciales de tipo "Secret text" con estos IDs:
-                            // - VITE_API_HOST_CRED
-                            // - VITE_API_PORT_CRED
-                            // - VITE_KEYCLOAK_URL_CRED
-                            // Estos valores nunca se hardcodean ni se suben al repositorio.
                             script {
                                 withCredentials([string(credentialsId: 'VITE_API_HOST_CRED', variable: 'VITE_API_HOST'),
                                                  string(credentialsId: 'VITE_API_PORT_CRED', variable: 'VITE_API_PORT'),
                                                  string(credentialsId: 'VITE_KEYCLOAK_URL_CRED', variable: 'VITE_KEYCLOAK_URL')]) {
-                                    // Construir el contenido del .env. Vite lee variables que comienzan con VITE_ en tiempo de build.
+                                    
                                     def envContent = """
 VITE_API_HOST=${VITE_API_HOST}
 VITE_API_PORT=${VITE_API_PORT}
 VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
 """.stripIndent()
 
-                                    // Escribir el archivo .env en el workspace del frontend (temporal y no versionado)
                                     writeFile file: '.env', text: envContent
-                                    echo 'Archivo .env creado desde credenciales de Jenkins (contenido oculto por seguridad).'
+                                    echo 'Archivo .env creado desde credenciales de Jenkins.'
                                 }
                             }
 
                             // --- Optimización 2: BUILD INCREMENTAL ---
-                            // Usamos 'npm install' en lugar de 'npm ci' para mantener node_modules entre builds.
-                            // Esto hace que las siguientes ejecuciones sean casi instantáneas si no cambian dependencias.
-                            // Forzamos CI=true para que las herramientas detecten entorno CI y optimicen la build
                             timeout(time: 20, unit: 'MINUTES') {
                                 bat "set CI=true && npm install --prefer-offline --no-audit --no-fund"
                                 bat "set CI=true && npm run build"
                             }
 
-                            echo '2. Creando la Imagen Docker del Frontend (BuildKit habilitado para mejores caches)...'
+                            echo '2. Creando la Imagen Docker del Frontend...'
                             script {
-                                // Usamos docker CLI con BuildKit activado para aprovechar capas y caches.
-                                // Nota: esto evita dependencias en el plugin docker-pipeline y suele funcionar mejor
-                                // con opciones avanzadas si se necesita (buildx, cache-to, etc.).
                                 bat "set DOCKER_BUILDKIT=1&&set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${FRONTEND_IMAGE} ."
                             }
+                            
+                            echo 'Subiendo imagen Frontend a Docker Hub...'
+                            script {
+                                docker.withRegistry('', "${REGISTRY_CREDENTIALS}") {
+                                    docker.image("${FRONTEND_IMAGE}").push()
+                                }
+                            }
                         }
-                    }
-                }
-            }
-        }
-
-        stage('Build Backend Image') {
-            steps {
-                echo 'Creando Imagen Docker del Backend...'
-
-                dir('Web-mono') {
-                    script {
-                        // Usamos docker build con BuildKit activado para mayor consistencia y mejores caches
-                        bat "set DOCKER_BUILDKIT=1&&set COMPOSE_DOCKER_CLI_BUILD=1 && docker build -t ${BACKEND_IMAGE} ."
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Images') {
-            steps {
-                echo 'Subiendo ambas imágenes a Docker Hub...'
-                script {
-                    // Usa la credencial configurada para autenticación
-                    docker.withRegistry('', "${REGISTRY_CREDENTIALS}") {
-                        docker.image("${FRONTEND_IMAGE}").push()
-                        docker.image("${BACKEND_IMAGE}").push()
                     }
                 }
             }
@@ -221,9 +146,9 @@ VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
             echo '❌ El pipeline ha fallado. Revisar logs.'
         }
         // ⚠️ OPTIMIZACIÓN: Comentamos cleanWs() para permitir builds incrementales.
-        // Si necesitas limpiar el espacio, descoméntalo o ejecútalo manualmente cuando sea necesario.
         // always {
         //     cleanWs() 
         // }
     }
 }
+```
