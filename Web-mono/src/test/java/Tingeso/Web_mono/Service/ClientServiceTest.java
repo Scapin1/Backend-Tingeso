@@ -78,4 +78,16 @@ class ClientServiceTest {
         verify(clientRepository).findById(1L);
         verify(clientRepository).save(client);
     }
+
+    @Test
+    void testChangeState_FromActiveToRestricted() {
+        ClientEntity client = new ClientEntity();
+        client.setClientState(ClientState.ACTIVE);
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
+        when(clientRepository.save(client)).thenReturn(client);
+        ClientEntity result = clientService.changeState(1L);
+        assertEquals(ClientState.RESTRICTED, result.getClientState());
+        verify(clientRepository).findById(1L);
+        verify(clientRepository).save(client);
+    }
 }

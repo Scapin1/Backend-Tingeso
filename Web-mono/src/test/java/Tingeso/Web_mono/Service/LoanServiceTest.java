@@ -68,7 +68,8 @@ class LoanServiceTest {
         when(toolRepository.findTopByNameAndState("Taladro", ToolStateType.AVAILABLE)).thenReturn(tool);
         when(clientRepository.getReferenceById(1L)).thenReturn(client);
         when(toolRepository.getStock("Taladro")).thenReturn(0);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -86,7 +87,8 @@ class LoanServiceTest {
         when(clientRepository.getReferenceById(1L)).thenReturn(client);
         when(toolRepository.getStock("Taladro")).thenReturn(10);
         when(loanRepository.existsOverdueLoanByClientId(1L)).thenReturn(true);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -104,7 +106,8 @@ class LoanServiceTest {
         when(clientRepository.getReferenceById(1L)).thenReturn(client);
         when(toolRepository.getStock("Taladro")).thenReturn(10);
         when(loanRepository.existsOverdueLoanByClientId(1L)).thenReturn(false);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -123,7 +126,8 @@ class LoanServiceTest {
         when(toolRepository.getStock("Taladro")).thenReturn(10);
         when(loanRepository.existsOverdueLoanByClientId(1L)).thenReturn(false);
         when(loanRepository.countByClientIdAndStatus(1L, LoanState.NORMAL)).thenReturn(5L);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -143,7 +147,8 @@ class LoanServiceTest {
         when(loanRepository.existsOverdueLoanByClientId(1L)).thenReturn(false);
         when(loanRepository.countByClientIdAndStatus(1L, LoanState.NORMAL)).thenReturn(0L);
         when(loanRepository.existsByToolAndClient("Taladro", client)).thenReturn(true);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -163,7 +168,8 @@ class LoanServiceTest {
         when(loanRepository.existsOverdueLoanByClientId(1L)).thenReturn(false);
         when(loanRepository.countByClientIdAndStatus(1L, LoanState.NORMAL)).thenReturn(0L);
         when(loanRepository.existsByToolAndClient("Taladro", client)).thenReturn(false);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -185,7 +191,8 @@ class LoanServiceTest {
         when(loanRepository.countByClientIdAndStatus(1L, LoanState.NORMAL)).thenReturn(0L);
         when(loanRepository.existsByToolAndClient("Taladro", client)).thenReturn(false);
         when(loanRepository.countByClientIdAndStatus(1L, LoanState.NORMAL)).thenReturn(0L);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.LOCKED, ex.getStatusCode());
     }
 
@@ -221,7 +228,8 @@ class LoanServiceTest {
         LoanEntity loan = new LoanEntity();
         loan.setStatus(LoanState.FINISHED);
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.returnLoan(1L, false, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.returnLoan(1L, false, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -277,7 +285,8 @@ class LoanServiceTest {
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
         when(loanRepository.save(any(LoanEntity.class))).thenReturn(loan);
         when(toolRepository.save(any(ToolEntity.class))).thenReturn(tool);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.returnLoan(1L, true, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.returnLoan(1L, true, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
         assertTrue(ex.getReason().contains("Client state cannot be null"));
     }
@@ -345,7 +354,8 @@ class LoanServiceTest {
 
     @Test
     void testAddLoan_NullLoan() {
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(null, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(null, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -354,7 +364,8 @@ class LoanServiceTest {
         LoanEntity loan = new LoanEntity();
         loan.setToolLoaned(new ToolEntity());
         loan.setReturnDate(LocalDate.now());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -363,7 +374,8 @@ class LoanServiceTest {
         LoanEntity loan = new LoanEntity();
         loan.setClient(new ClientEntity());
         loan.setReturnDate(LocalDate.now());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -372,7 +384,8 @@ class LoanServiceTest {
         LoanEntity loan = new LoanEntity();
         loan.setClient(new ClientEntity());
         loan.setToolLoaned(new ToolEntity());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -388,7 +401,8 @@ class LoanServiceTest {
         loan.setReturnDate(LocalDate.now().plusDays(2));
         when(toolRepository.findTopByNameAndState("Taladro", ToolStateType.AVAILABLE)).thenReturn(null);
         when(clientRepository.getReferenceById(1L)).thenReturn(client);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -404,14 +418,16 @@ class LoanServiceTest {
         loan.setReturnDate(LocalDate.now().plusDays(2));
         when(toolRepository.findTopByNameAndState("Taladro", ToolStateType.AVAILABLE)).thenReturn(tool);
         when(clientRepository.getReferenceById(1L)).thenReturn(null);
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.addLoan(loan, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.addLoan(loan, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
     @Test
     void testReturnLoan_LoanNull() {
         when(loanRepository.findById(1L)).thenReturn(Optional.empty());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> loanService.returnLoan(1L, false, "user"));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> loanService.returnLoan(1L, false, "user"));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -520,5 +536,47 @@ class LoanServiceTest {
         verify(toolRepository).save(any(ToolEntity.class));
         verify(kardexRepository).save(any(KardexEntity.class));
         verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void testGetClientsWithMostLoansInRange() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        ClientWithMostLoansDTO dto = new ClientWithMostLoansDTO();
+        when(loanRepository.findClientsWithMostLoansInRange(start, end)).thenReturn(Collections.singletonList(dto));
+        List<ClientWithMostLoansDTO> result = loanService.getClientsWithMostLoansInRange(start, end);
+        assertEquals(1, result.size());
+        verify(loanRepository).findClientsWithMostLoansInRange(start, end);
+    }
+
+    @Test
+    void testGetClientsWithMostOverduesInRange() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        ClientWithMostOverduesDTO dto = new ClientWithMostOverduesDTO();
+        when(loanRepository.findClientsWithMostOverduesInRange(start, end)).thenReturn(Collections.singletonList(dto));
+        List<ClientWithMostOverduesDTO> result = loanService.getClientsWithMostOverduesInRange(start, end);
+        assertEquals(1, result.size());
+        verify(loanRepository).findClientsWithMostOverduesInRange(start, end);
+    }
+
+    @Test
+    void testGetToolWithMostOverduesInRange_Valid() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        ToolWithMostOverduesDTO dto = new ToolWithMostOverduesDTO();
+        when(loanRepository.findToolsWithMostOverduesInRange(start, end)).thenReturn(Collections.singletonList(dto));
+        ToolWithMostOverduesDTO result = loanService.getToolWithMostOverduesInRange(start, end);
+        assertNotNull(result);
+        verify(loanRepository).findToolsWithMostOverduesInRange(start, end);
+    }
+
+    @Test
+    void testGetToolWithMostOverduesInRange_Empty() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        when(loanRepository.findToolsWithMostOverduesInRange(start, end)).thenReturn(Collections.emptyList());
+        assertNull(loanService.getToolWithMostOverduesInRange(start, end));
+        verify(loanRepository).findToolsWithMostOverduesInRange(start, end);
     }
 }

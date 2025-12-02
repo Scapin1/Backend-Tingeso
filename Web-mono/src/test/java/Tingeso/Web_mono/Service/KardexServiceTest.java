@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,7 +99,7 @@ class KardexServiceTest {
 
     @Test
     void testGetMostRequestedTool_Valid() {
-        Object[] row = new Object[]{"Taladro", 5L};
+        Object[] row = new Object[] { "Taladro", 5L };
         List<Object[]> resultList = Collections.singletonList(row);
         when(kardexRepository.findMostRequestedTool()).thenReturn(resultList);
         MostRequestedToolDTO dto = kardexService.getMostRequestedTool();
@@ -117,7 +118,7 @@ class KardexServiceTest {
 
     @Test
     void testGetMostRequestedTool_NullValuesInRow() {
-        Object[] row = new Object[]{null, null};
+        Object[] row = new Object[] { null, null };
         List<Object[]> resultList = Collections.singletonList(row);
         when(kardexRepository.findMostRequestedTool()).thenReturn(resultList);
         MostRequestedToolDTO dto = kardexService.getMostRequestedTool();
@@ -125,5 +126,38 @@ class KardexServiceTest {
         assertNull(dto.getToolName());
         assertEquals(0L, dto.getRequestCount());
         verify(kardexRepository).findMostRequestedTool();
+    }
+
+    @Test
+    void testGetMostRequestedToolInRange_Valid() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        MostRequestedToolDTO dto = new MostRequestedToolDTO("Taladro", 5L);
+        when(kardexRepository.findRequestedToolsInRangeDTO(start, end)).thenReturn(Collections.singletonList(dto));
+        MostRequestedToolDTO result = kardexService.getMostRequestedToolInRange(start, end);
+        assertNotNull(result);
+        assertEquals("Taladro", result.getToolName());
+        verify(kardexRepository).findRequestedToolsInRangeDTO(start, end);
+    }
+
+    @Test
+    void testGetMostRequestedToolInRange_Empty() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        when(kardexRepository.findRequestedToolsInRangeDTO(start, end)).thenReturn(Collections.emptyList());
+        assertNull(kardexService.getMostRequestedToolInRange(start, end));
+        verify(kardexRepository).findRequestedToolsInRangeDTO(start, end);
+    }
+
+    @Test
+    void testGetRequestedToolsInRange() {
+        LocalDate start = LocalDate.now().minusDays(10);
+        LocalDate end = LocalDate.now();
+        MostRequestedToolDTO dto = new MostRequestedToolDTO("Taladro", 5L);
+        when(kardexRepository.findRequestedToolsInRangeDTO(start, end)).thenReturn(Collections.singletonList(dto));
+        List<MostRequestedToolDTO> result = kardexService.getRequestedToolsInRange(start, end);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(kardexRepository).findRequestedToolsInRangeDTO(start, end);
     }
 }
