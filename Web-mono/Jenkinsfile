@@ -139,14 +139,10 @@ VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
     // ------------------------------------------------------------------
     post {
         success {
-            echo '✅ Pipeline completado exitosamente. Ambas imágenes subidas.'
+            echo 'Pipeline completado exitosamente. Ambas imágenes subidas.'
         }
         failure {
-            echo '❌ El pipeline ha fallado. Revisar logs.'
+            echo 'El pipeline ha fallado. Revisar logs.'
         }
-        // ⚠️ OPTIMIZACIÓN: Comentamos cleanWs() para permitir builds incrementales.
-        // always {
-        //     cleanWs() 
-        // }
     }
 }
