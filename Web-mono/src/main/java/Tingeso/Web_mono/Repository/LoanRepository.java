@@ -47,8 +47,8 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     @Query(value = "SELECT new Tingeso.Web_mono.Controller.models.ToolWithMostOverduesDTO(t.name, COUNT(*)) " +
             "FROM LoanEntity l JOIN l.toolLoaned t " +
             "WHERE l.status = 'OVERDUE' OR l.status = 'LATE_RETURN' " +
-            "GROUP BY t.name ORDER BY COUNT(*) DESC LiMIT 1")
-    ToolWithMostOverduesDTO findToolWithMostOverdues();
+            "GROUP BY t.name ORDER BY COUNT(*) DESC LIMIT 5")
+    List<ToolWithMostOverduesDTO> findToolWithMostOverdues();
 
     @Query("SELECT new Tingeso.Web_mono.Controller.models.ClientWithMostLoansDTO(l.client.rut, COUNT(l)) " +
             "FROM LoanEntity l WHERE l.loanDate BETWEEN :start AND :end GROUP BY l.client.rut ORDER BY COUNT(l) DESC")
@@ -59,6 +59,6 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     List<ClientWithMostOverduesDTO> findClientsWithMostOverduesInRange(java.time.LocalDate start, java.time.LocalDate end);
 
     @Query("SELECT new Tingeso.Web_mono.Controller.models.ToolWithMostOverduesDTO(l.toolLoaned.name, COUNT(l)) " +
-            "FROM LoanEntity l WHERE (l.status = 'OVERDUE' OR l.status = 'LATE_RETURN') AND l.loanDate BETWEEN :start AND :end GROUP BY l.toolLoaned.name ORDER BY COUNT(l) DESC")
+            "FROM LoanEntity l WHERE (l.status = 'OVERDUE' OR l.status = 'LATE_RETURN') AND l.loanDate BETWEEN :start AND :end GROUP BY l.toolLoaned.name ORDER BY COUNT(l) DESC LIMIT 5")
     List<ToolWithMostOverduesDTO> findToolsWithMostOverduesInRange(java.time.LocalDate start, java.time.LocalDate end);
 }

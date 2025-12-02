@@ -68,7 +68,9 @@ class KardexServiceTest {
     @Test
     void testGetMostRequestedTool_Empty() {
         when(kardexRepository.findMostRequestedTool()).thenReturn(Collections.emptyList());
-        assertNull(kardexService.getMostRequestedTool());
+        List<MostRequestedToolDTO> result = kardexService.getMostRequestedTool();
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
         verify(kardexRepository).findMostRequestedTool();
     }
 
@@ -99,34 +101,27 @@ class KardexServiceTest {
 
     @Test
     void testGetMostRequestedTool_Valid() {
-        Object[] row = new Object[] { "Taladro", 5L };
-        List<Object[]> resultList = Collections.singletonList(row);
+        MostRequestedToolDTO dto = new MostRequestedToolDTO("Taladro", 5L);
+        List<MostRequestedToolDTO> resultList = Collections.singletonList(dto);
         when(kardexRepository.findMostRequestedTool()).thenReturn(resultList);
-        MostRequestedToolDTO dto = kardexService.getMostRequestedTool();
-        assertNotNull(dto);
-        assertEquals("Taladro", dto.getToolName());
-        assertEquals(5L, dto.getRequestCount());
+        List<MostRequestedToolDTO> result = kardexService.getMostRequestedTool();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Taladro", result.get(0).getToolName());
+        assertEquals(5L, result.get(0).getRequestCount());
         verify(kardexRepository).findMostRequestedTool();
     }
 
     @Test
     void testGetMostRequestedTool_NullList() {
-        when(kardexRepository.findMostRequestedTool()).thenReturn(null);
-        assertNull(kardexService.getMostRequestedTool());
+        when(kardexRepository.findMostRequestedTool()).thenReturn(Collections.emptyList());
+        List<MostRequestedToolDTO> result = kardexService.getMostRequestedTool();
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
         verify(kardexRepository).findMostRequestedTool();
     }
 
-    @Test
-    void testGetMostRequestedTool_NullValuesInRow() {
-        Object[] row = new Object[] { null, null };
-        List<Object[]> resultList = Collections.singletonList(row);
-        when(kardexRepository.findMostRequestedTool()).thenReturn(resultList);
-        MostRequestedToolDTO dto = kardexService.getMostRequestedTool();
-        assertNotNull(dto);
-        assertNull(dto.getToolName());
-        assertEquals(0L, dto.getRequestCount());
-        verify(kardexRepository).findMostRequestedTool();
-    }
+
 
     @Test
     void testGetMostRequestedToolInRange_Valid() {
@@ -134,9 +129,10 @@ class KardexServiceTest {
         LocalDate end = LocalDate.now();
         MostRequestedToolDTO dto = new MostRequestedToolDTO("Taladro", 5L);
         when(kardexRepository.findRequestedToolsInRangeDTO(start, end)).thenReturn(Collections.singletonList(dto));
-        MostRequestedToolDTO result = kardexService.getMostRequestedToolInRange(start, end);
+        List<MostRequestedToolDTO> result = kardexService.getMostRequestedToolInRange(start, end);
         assertNotNull(result);
-        assertEquals("Taladro", result.getToolName());
+        assertEquals(1, result.size());
+        assertEquals("Taladro", result.get(0).getToolName());
         verify(kardexRepository).findRequestedToolsInRangeDTO(start, end);
     }
 
@@ -145,7 +141,9 @@ class KardexServiceTest {
         LocalDate start = LocalDate.now().minusDays(10);
         LocalDate end = LocalDate.now();
         when(kardexRepository.findRequestedToolsInRangeDTO(start, end)).thenReturn(Collections.emptyList());
-        assertNull(kardexService.getMostRequestedToolInRange(start, end));
+        List<MostRequestedToolDTO> result = kardexService.getMostRequestedToolInRange(start, end);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
         verify(kardexRepository).findRequestedToolsInRangeDTO(start, end);
     }
 

@@ -49,12 +49,12 @@ public class KardexController {
     }
 
     @GetMapping("/mostRequestedTool")
-    public MostRequestedToolDTO getMostRequestedTool() {
+    public List<MostRequestedToolDTO> getMostRequestedTool() {
         return kardexService.getMostRequestedTool();
     }
 
     @GetMapping("/mostRequestedToolInRange")
-    public MostRequestedToolDTO getMostRequestedToolInRange(@RequestParam String startDate, @RequestParam String endDate) {
+    public List<MostRequestedToolDTO> getMostRequestedToolInRange(@RequestParam String startDate, @RequestParam String endDate) {
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
         return kardexService.getMostRequestedToolInRange(start, end);

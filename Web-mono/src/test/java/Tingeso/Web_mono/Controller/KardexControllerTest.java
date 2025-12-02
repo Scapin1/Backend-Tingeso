@@ -76,8 +76,9 @@ class KardexControllerTest {
     @Test
     void testGetMostRequestedTool() {
         MostRequestedToolDTO dto = new MostRequestedToolDTO();
-        when(kardexService.getMostRequestedTool()).thenReturn(dto);
-        assertEquals(dto, kardexController.getMostRequestedTool());
+        List<MostRequestedToolDTO> list = Collections.singletonList(dto);
+        when(kardexService.getMostRequestedTool()).thenReturn(list);
+        assertEquals(list, kardexController.getMostRequestedTool());
         verify(kardexService).getMostRequestedTool();
     }
 }

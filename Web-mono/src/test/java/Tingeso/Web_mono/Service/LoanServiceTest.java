@@ -347,8 +347,10 @@ class LoanServiceTest {
 
     @Test
     void testGetToolWithMostOverdues() {
-        when(loanRepository.findToolWithMostOverdues()).thenReturn(null);
-        assertNull(loanService.getToolWithMostOverdues());
+        when(loanRepository.findToolWithMostOverdues()).thenReturn(Collections.emptyList());
+        List<ToolWithMostOverduesDTO> result = loanService.getToolWithMostOverdues();
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
         verify(loanRepository).findToolWithMostOverdues();
     }
 
@@ -503,11 +505,12 @@ class LoanServiceTest {
     }
 
     @Test
-    void testGetToolWithMostOverdues_ReturnsDTO() {
+    void testGetToolWithMostOverdues_ReturnsList() {
         ToolWithMostOverduesDTO dto = new ToolWithMostOverduesDTO();
-        when(loanRepository.findToolWithMostOverdues()).thenReturn(dto);
-        ToolWithMostOverduesDTO result = loanService.getToolWithMostOverdues();
+        when(loanRepository.findToolWithMostOverdues()).thenReturn(Collections.singletonList(dto));
+        List<ToolWithMostOverduesDTO> result = loanService.getToolWithMostOverdues();
         assertNotNull(result);
+        assertEquals(1, result.size());
         verify(loanRepository).findToolWithMostOverdues();
     }
 
@@ -566,8 +569,9 @@ class LoanServiceTest {
         LocalDate end = LocalDate.now();
         ToolWithMostOverduesDTO dto = new ToolWithMostOverduesDTO();
         when(loanRepository.findToolsWithMostOverduesInRange(start, end)).thenReturn(Collections.singletonList(dto));
-        ToolWithMostOverduesDTO result = loanService.getToolWithMostOverduesInRange(start, end);
+        List<ToolWithMostOverduesDTO> result = loanService.getToolWithMostOverduesInRange(start, end);
         assertNotNull(result);
+        assertEquals(1, result.size());
         verify(loanRepository).findToolsWithMostOverduesInRange(start, end);
     }
 
@@ -576,7 +580,9 @@ class LoanServiceTest {
         LocalDate start = LocalDate.now().minusDays(10);
         LocalDate end = LocalDate.now();
         when(loanRepository.findToolsWithMostOverduesInRange(start, end)).thenReturn(Collections.emptyList());
-        assertNull(loanService.getToolWithMostOverduesInRange(start, end));
+        List<ToolWithMostOverduesDTO> result = loanService.getToolWithMostOverduesInRange(start, end);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
         verify(loanRepository).findToolsWithMostOverduesInRange(start, end);
     }
 }

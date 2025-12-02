@@ -67,8 +67,9 @@ class LoanControllerTest {
     @Test
     void testGetToolWithMostOverdues() {
         ToolWithMostOverduesDTO dto = new ToolWithMostOverduesDTO();
-        when(loanService.getToolWithMostOverdues()).thenReturn(dto);
-        assertEquals(dto, loanController.getToolWithMostOverdues());
+        List<ToolWithMostOverduesDTO> list = Collections.singletonList(dto);
+        when(loanService.getToolWithMostOverdues()).thenReturn(list);
+        assertEquals(list, loanController.getToolWithMostOverdues());
         verify(loanService).getToolWithMostOverdues();
     }
 }
