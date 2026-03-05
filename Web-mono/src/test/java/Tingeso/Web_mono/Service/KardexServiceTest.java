@@ -114,14 +114,11 @@ class KardexServiceTest {
 
     @Test
     void testGetMostRequestedTool_NullList() {
-        when(kardexRepository.findMostRequestedTool()).thenReturn(Collections.emptyList());
+        when(kardexRepository.findMostRequestedTool()).thenReturn(null);
         List<MostRequestedToolDTO> result = kardexService.getMostRequestedTool();
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertNull(result);
         verify(kardexRepository).findMostRequestedTool();
     }
-
-
 
     @Test
     void testGetMostRequestedToolInRange_Valid() {

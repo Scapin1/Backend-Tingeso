@@ -5,9 +5,7 @@ import Tingeso.Web_mono.Controller.models.ToolAvailableDTO;
 import Tingeso.Web_mono.Entity.FeeEntity;
 import Tingeso.Web_mono.Entity.ToolEntity;
 import Tingeso.Web_mono.Service.ToolService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,8 +14,8 @@ import java.util.List;
 @RequestMapping("/api/tools")
 @RequiredArgsConstructor
 public class ToolController {
-    @Autowired
-    private ToolService toolService;
+
+    private final ToolService toolService;
 
     @GetMapping("/getAllList")
     public List<ToolAvailableDTO> getAllToolsList() {
@@ -35,7 +33,7 @@ public class ToolController {
     }
 
     @PostMapping("/addTool/{username}")
-    public void addTool(@RequestBody CreateToolDTO tool,@PathVariable String username) {
+    public void addTool(@RequestBody CreateToolDTO tool, @PathVariable String username) {
         toolService.save(tool, username);
     }
 

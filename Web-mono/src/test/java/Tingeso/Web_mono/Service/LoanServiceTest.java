@@ -8,6 +8,7 @@ import Tingeso.Web_mono.Entity.*;
 import Tingeso.Web_mono.Repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.List;
@@ -477,13 +479,13 @@ class LoanServiceTest {
 
     @Test
     void testGetAllLoans_CallsMarkOverdueAndReturnsList() {
-        LoanDTO dto = new LoanDTO();
-        doNothing().when(loanRepository).markOverdueLoans();
-        when(loanRepository.findAllLoan()).thenReturn(Collections.singletonList(dto));
+        List<LoanDTO> loans = Arrays.asList(new LoanDTO(), new LoanDTO());
+        when(loanRepository.findAllLoan()).thenReturn(loans);
         List<LoanDTO> result = loanService.getAllLoans();
-        assertEquals(1, result.size());
-        verify(loanRepository).markOverdueLoans();
-        verify(loanRepository).findAllLoan();
+        assertEquals(2, result.size());
+        InOrder inOrder = inOrder(loanRepository);
+        inOrder.verify(loanRepository).markOverdueLoans();
+        inOrder.verify(loanRepository).findAllLoan();
     }
 
     @Test
